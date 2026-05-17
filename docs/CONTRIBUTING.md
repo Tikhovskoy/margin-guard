@@ -47,8 +47,8 @@ api/             — HTTP-слой (FastAPI)
 ## Pull Request
 
 1. Ветка по [WORKFLOW.md](WORKFLOW.md)
-2. Тесты и линтеры проходят локально
-3. PR в `dev`, после проверки — в `main`
+2. Обкатка: merge в `dev`, проверка
+3. PR в `main` (squash)
 
 ## Git config
 

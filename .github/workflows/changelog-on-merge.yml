@@ -3,7 +3,7 @@ name: Changelog on PR merge
 on:
   pull_request:
     types: [closed]
-    branches: [dev]
+    branches: [main]
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: main
 
       - name: Extract changelog from PR
         id: extract
@@ -48,4 +48,4 @@ jobs:
           git add changelog/unreleased/
           git diff --staged --quiet && exit 0
           git commit -m "chore: добавил запись changelog из PR #${{ github.event.pull_request.number }}"
-          git push origin dev
+          git push origin main

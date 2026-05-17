@@ -4,15 +4,16 @@
 
 | Ветка | Назначение |
 |-------|------------|
-| `main` | Релизная версия |
-| `dev` | Интеграция и проверка |
+| `main` | Релизная версия, merge только через PR |
+| `dev` | Обкатка и проверка изменений (без PR) |
 | `feature/*` | Новая функциональность |
 | `fix/*` | Исправления |
 | `hotfix/*` | Срочные исправления в production |
 
-- `main` — merge только через Pull Request (squash).
 - `feature/*`, `fix/*` — от актуального `main`.
-- После merge `dev` → `main` выполнить sync: `main` → `dev`.
+- Обкатка: merge в `dev` напрямую (`git merge`), без Pull Request.
+- Релиз: Pull Request `feature/*` → `main` (squash).
+- После merge в `main`: sync `main` → `dev`.
 
 ## Поток изменений
 
@@ -23,9 +24,9 @@ flowchart LR
     feature[feature/*]
 
     main --> feature
-    feature --> dev
-    dev -->|PR squash| main
-    main --> dev
+    feature -->|merge обкатка| dev
+    feature -->|PR squash| main
+    main -->|sync| dev
 ```
 
 ### Feature
@@ -37,10 +38,19 @@ git checkout -b feature/<name>
 git push -u origin feature/<name>
 ```
 
-1. PR: `feature/*` → `dev`
-2. Проверка на `dev`
-3. PR: `dev` → `main` (Squash and merge)
-4. Sync:
+**Обкатка на `dev`:**
+
+```bash
+git checkout dev && git pull origin dev
+git merge origin/feature/<name>
+# тесты, проверка
+git push origin dev
+```
+
+**Релиз в `main`:**
+
+1. PR: `feature/*` → `main` (Squash and merge)
+2. Sync:
 
 ```bash
 git checkout dev && git pull origin dev
@@ -52,6 +62,7 @@ git merge origin/main && git push origin dev
 ```bash
 git checkout main && git pull origin main
 git checkout -b hotfix/<name>
+# fix, push
 ```
 
 1. PR: `hotfix/*` → `main` (squash)
@@ -73,12 +84,16 @@ git checkout -b hotfix/<name>
 
 ## Pull Request
 
-| Направление | Merge |
-|-------------|--------|
-| `feature/*` → `dev` | Merge / Squash |
-| `dev` → `main` | Squash |
+| Куда | Когда |
+|------|--------|
+| `feature/*` → `main` | После обкатки на `dev` |
+| `hotfix/*` → `main` | Сразу после исправления |
 
-В описании PR: что изменено, как проверить.
+Merge в `main`: **Squash**.
+
+В PR: шаблон (изменения, changelog, чеклист, как проверял).
+
+В `dev` Pull Request **не используются**.
 
 ## Версии и CHANGELOG
 
@@ -86,19 +101,13 @@ git checkout -b hotfix/<name>
 
 ### Pull Request
 
-При создании PR подставляется шаблон: **Изменения**, **Changelog**, **Чеклист**, **Как проверял(а)**.
+Шаблон PR: **Изменения**, **Changelog**, **Чеклист**, **Как проверял(а)**.
 
-Секция **Changelog** обязательна для записи в историю (категории `Added`, `Changed`, `Fixed`, `Removed`).
+### После merge PR в `main`
 
-### После merge в `dev`
-
-Workflow сохраняет секцию Changelog из PR в `changelog/unreleased/pr-<номер>.md`.
+Workflow сохраняет секцию Changelog в `changelog/unreleased/pr-<номер>.md`.
 
 ### Релиз
-
-1. Merge `dev` → `main`
-2. Убедиться, что в `changelog/unreleased/` есть записи с `dev`
-3. Тег на `main`:
 
 ```bash
 git checkout main && git pull origin main
@@ -106,9 +115,9 @@ git tag -a v0.1.0 -m "v0.1.0"
 git push origin v0.1.0
 ```
 
-4. Workflow `release.yml` собирает `CHANGELOG.md`, создаёт GitHub Release
+Workflow `release.yml` собирает `CHANGELOG.md` и создаёт GitHub Release.
 
-Локально (без CI):
+Локально:
 
 ```bash
 python scripts/changelog_release.py 0.1.0
@@ -119,13 +128,18 @@ python scripts/changelog_release.py 0.1.0
 | Окружение | Ветка | API маркетплейсов |
 |-----------|-------|-------------------|
 | local | feature/* | `mock` |
-| integration | `dev` | `mock` / `live` |
+| обкатка | `dev` | `mock` / `live` |
 | production | `main` | `live` |
 
 Переменные: `WB_MODE`, `OZON_MODE` (`mock` | `live`).
 
 ## Защита `main` (GitHub)
 
-Ruleset `Protect main`: restrict updates, restrict deletions, require PR, block force push, squash merge.
+Ruleset `Protect main`:
+
+- Require pull request (squash)
+- Block force pushes
+- Restrict deletions
+- **Restrict updates** — выключено (блокирует merge PR)
 
 Ветка `dev` без ruleset.
