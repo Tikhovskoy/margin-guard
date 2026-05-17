@@ -32,7 +32,7 @@ docker compose up -d
 | `dev` | Интеграция и тестирование |
 | `feature/*` | Новые задачи (от `main`) |
 
-См. [CONTRIBUTING.md](CONTRIBUTING.md).
+Документация: [WORKFLOW.md](docs/WORKFLOW.md), [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## Лицензия
 
