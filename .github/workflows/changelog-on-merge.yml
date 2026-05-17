@@ -1,0 +1,51 @@
+name: Changelog on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  save-entry:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Extract changelog from PR
+        id: extract
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf '%s' "$PR_BODY" > /tmp/pr_body.md
+          SECTION=$(python3 scripts/changelog_extract.py /tmp/pr_body.md)
+          if [ -z "$(echo "$SECTION" | tr -d '[:space:]')" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No Changelog section in PR — skip"
+            exit 0
+          fi
+          FILE="changelog/unreleased/pr-${PR_NUMBER}.md"
+          {
+            echo "## PR #${PR_NUMBER}: ${PR_TITLE}"
+            echo ""
+            echo "$SECTION"
+          } > "$FILE"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "Created $FILE"
+
+      - name: Commit fragment
+        if: steps.extract.outputs.skip != 'true'
+        run: |
+          git config user.name "Виктор Тиховской"
+          git config user.email "tihovskoyviktor@icloud.com"
+          git add changelog/unreleased/
+          git diff --staged --quiet && exit 0
+          git commit -m "chore: добавил запись changelog из PR #${{ github.event.pull_request.number }}"
+          git push origin main

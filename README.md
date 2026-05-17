@@ -29,8 +29,8 @@ docker compose up -d
 | Ветка | Назначение |
 |-------|------------|
 | `main` | Стабильная версия |
-| `dev` | Интеграция и тестирование |
-| `feature/*` | Новые задачи (от `main`) |
+| `dev` | Обкатка изменений |
+| `feature/*` | Новые задачи (от `main`, PR в `main`) |
 
 Документация: [WORKFLOW.md](docs/WORKFLOW.md), [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
