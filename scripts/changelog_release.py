@@ -15,11 +15,7 @@ RELEASE_NOTES_PATH = ROOT / "changelog" / "RELEASE_NOTES.md"
 
 CATEGORIES = ("Added", "Changed", "Fixed", "Removed")
 UNRELEASED_STUB = (
-    "## [Unreleased]\n\n"
-    "### Added\n\n"
-    "### Changed\n\n"
-    "### Fixed\n\n"
-    "### Removed\n\n"
+    "## [Unreleased]\n\n### Added\n\n### Changed\n\n### Fixed\n\n### Removed\n\n"
 )
 
 
@@ -46,7 +42,9 @@ def merge_buckets(target: dict[str, list[str]], source: dict[str, list[str]]) ->
                 target[cat].append(item)
 
 
-def format_version_block(version: str, release_date: str, buckets: dict[str, list[str]]) -> str:
+def format_version_block(
+    version: str, release_date: str, buckets: dict[str, list[str]]
+) -> str:
     lines = [f"## [{version}] - {release_date}", ""]
     for cat in CATEGORIES:
         if not buckets[cat]:
@@ -82,7 +80,9 @@ def update_changelog_file(version_block: str) -> None:
             count=1,
         )
     else:
-        content = content.replace("# Changelog\n\n", f"# Changelog\n\n{UNRELEASED_STUB}", 1)
+        content = content.replace(
+            "# Changelog\n\n", f"# Changelog\n\n{UNRELEASED_STUB}", 1
+        )
     content = content.replace(UNRELEASED_STUB, UNRELEASED_STUB + version_block, 1)
     CHANGELOG_PATH.write_text(content, encoding="utf-8")
 

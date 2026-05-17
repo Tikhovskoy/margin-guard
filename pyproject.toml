@@ -1,0 +1,43 @@
+[project]
+name = "margin-guard"
+version = "0.1.0"
+description = "Контроль маржи для селлеров WB и Ozon"
+readme = "README.md"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = ["apps/api", "apps/worker"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ["apps/api/src", "apps/worker/src", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = ["apps/api/src", "apps/worker/src"]
+
+[[tool.mypy.overrides]]
+module = ["celery.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["margin_guard_worker.tasks.*"]
+disallow_untyped_decorators = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["apps/api/tests", "scripts/tests"]
+pythonpath = ["apps/api/src", "apps/worker/src", "scripts"]
