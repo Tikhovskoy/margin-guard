@@ -80,15 +80,38 @@ git checkout -b hotfix/<name>
 
 В описании PR: что изменено, как проверить.
 
-## Версии
+## Версии и CHANGELOG
 
 [Semantic Versioning](https://semver.org/lang/ru/): `v<major>.<minor>.<patch>`.
 
-Тег на `main` после релиза:
+### Pull Request
+
+При создании PR подставляется шаблон: **Изменения**, **Changelog**, **Чеклист**, **Как проверял(а)**.
+
+Секция **Changelog** обязательна для записи в историю (категории `Added`, `Changed`, `Fixed`, `Removed`).
+
+### После merge в `dev`
+
+Workflow сохраняет секцию Changelog из PR в `changelog/unreleased/pr-<номер>.md`.
+
+### Релиз
+
+1. Merge `dev` → `main`
+2. Убедиться, что в `changelog/unreleased/` есть записи с `dev`
+3. Тег на `main`:
 
 ```bash
+git checkout main && git pull origin main
 git tag -a v0.1.0 -m "v0.1.0"
 git push origin v0.1.0
+```
+
+4. Workflow `release.yml` собирает `CHANGELOG.md`, создаёт GitHub Release
+
+Локально (без CI):
+
+```bash
+python scripts/changelog_release.py 0.1.0
 ```
 
 ## Окружения

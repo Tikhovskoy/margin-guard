@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Собрать CHANGELOG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          python3 scripts/changelog_release.py "$VERSION"
+
+      - name: Закоммитить CHANGELOG
+        run: |
+          git config user.name "Виктор Тиховской"
+          git config user.email "tihovskoyviktor@icloud.com"
+          git add CHANGELOG.md changelog/
+          if git diff --staged --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: обновил CHANGELOG для ${GITHUB_REF_NAME}"
+          git push origin main
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: changelog/RELEASE_NOTES.md
