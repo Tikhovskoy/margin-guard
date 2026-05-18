@@ -33,6 +33,15 @@ class SkuOperation:
 
 
 @dataclass(frozen=True, slots=True)
+class CostPriceEntry:
+    """Себестоимость SKU на маркетплейсе."""
+
+    marketplace: Marketplace
+    sku: str
+    cost_price: Decimal
+
+
+@dataclass(frozen=True, slots=True)
 class SkuMargin:
     """Рассчитанная маржа по SKU."""
 
