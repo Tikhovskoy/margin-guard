@@ -44,11 +44,20 @@ api/             — HTTP-слой (FastAPI)
 
 Язык описания — русский.
 
+## Changelog
+
+```bash
+make changelog   # changelogs/unreleased/<ветка>.md
+```
+
+Подробнее: [changelogs/README.md](../changelogs/README.md).
+
 ## Pull Request
 
 1. Ветка по [WORKFLOW.md](WORKFLOW.md)
-2. Обкатка: merge в `dev`, проверка
-3. PR в `main` (squash)
+2. `make changelog`, заполнить файл в `changelogs/unreleased/`
+3. Обкатка: merge в `dev`, проверка
+4. PR в `main` (squash)
 
 ## Git config
 

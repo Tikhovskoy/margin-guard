@@ -19,7 +19,7 @@ dev = [
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-src = ["apps/api/src", "apps/worker/src", "scripts"]
+src = ["apps/api/src", "apps/worker/src", "scripts", "changelogs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
@@ -40,4 +40,4 @@ disallow_untyped_decorators = false
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["apps/api/tests", "scripts/tests"]
-pythonpath = ["apps/api/src", "apps/worker/src", "scripts"]
+pythonpath = ["apps/api/src", "apps/worker/src", "changelogs"]
