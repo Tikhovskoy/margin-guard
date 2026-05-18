@@ -63,10 +63,10 @@ async def preview_margins(
     date_from = date_to - timedelta(days=7)
     operations = await adapter.fetch_operations(date_from, date_to)
 
-    cost_map = {
-        "WB-001": cost_wb_001,
-        "WB-002": cost_wb_002,
-        "OZ-101": cost_oz_101,
+    cost_map: dict[tuple[str, str], Decimal] = {
+        (Marketplace.WILDBERRIES.value, "WB-001"): cost_wb_001,
+        (Marketplace.WILDBERRIES.value, "WB-002"): cost_wb_002,
+        (Marketplace.OZON.value, "OZ-101"): cost_oz_101,
     }
     margins = CalculateMarginsUseCase().execute(operations, cost_map)
 
