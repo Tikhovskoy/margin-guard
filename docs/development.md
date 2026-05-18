@@ -32,6 +32,22 @@ docker compose up -d
 uv run --package margin-guard-api uvicorn margin_guard.api.main:app --reload --app-dir apps/api/src
 ```
 
+## Миграции БД
+
+PostgreSQL должен быть запущен (`docker compose up -d postgres`).
+
+```bash
+set PYTHONPATH=apps/api/src
+uv run alembic -c alembic.ini upgrade head
+```
+
+Новая ревизия (после изменения ORM-моделей):
+
+```bash
+uv run alembic -c alembic.ini revision --autogenerate -m "описание"
+uv run alembic -c alembic.ini upgrade head
+```
+
 ## Тесты
 
 ```bash
@@ -64,7 +80,8 @@ Live-адаптеры подключаются после получения API
 apps/api/src/margin_guard/
   domain/           # сущности, расчёт маржи, порты
   application/      # use cases
-  infrastructure/   # адаптеры WB/Ozon
+  infrastructure/   # адаптеры WB/Ozon, БД, репозитории
   api/              # FastAPI routes
+apps/api/alembic/   # миграции Alembic
 apps/worker/        # Celery
 ```
