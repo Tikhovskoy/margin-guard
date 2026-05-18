@@ -7,7 +7,7 @@ import structlog
 from fastapi import FastAPI
 
 from margin_guard import __version__
-from margin_guard.api.routes import health, margins
+from margin_guard.api.routes import cost_prices, health, margins
 from margin_guard.config import get_settings
 
 logger = structlog.get_logger()
@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(margins.router, prefix="/api/v1")
+    app.include_router(cost_prices.router, prefix="/api/v1")
     return app
 
 
