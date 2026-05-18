@@ -1,5 +1,7 @@
 """Загрузка себестоимости."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
@@ -23,7 +25,10 @@ class CostPriceUploadResponse(BaseModel):
 
 @router.post("/upload", response_model=CostPriceUploadResponse)
 async def upload_cost_prices(
-    file: UploadFile = File(..., description="CSV: marketplace, sku, cost_price"),
+    file: Annotated[
+        UploadFile,
+        File(description="CSV: marketplace, sku, cost_price"),
+    ],
 ) -> CostPriceUploadResponse:
     """Загрузить или обновить себестоимость из CSV."""
     raw = await file.read()

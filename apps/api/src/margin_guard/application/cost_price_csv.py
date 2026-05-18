@@ -49,7 +49,9 @@ class CostPriceCsvParser:
         marketplace = self._parse_marketplace(marketplace_raw, line_no)
         cost_price = self._parse_decimal(cost_raw, line_no)
         if cost_price < 0:
-            raise CostPriceCsvError(f"Строка {line_no}: себестоимость не может быть < 0")
+            raise CostPriceCsvError(
+                f"Строка {line_no}: себестоимость не может быть < 0",
+            )
         return CostPriceEntry(
             marketplace=marketplace,
             sku=sku,
