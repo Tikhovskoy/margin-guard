@@ -91,37 +91,38 @@ git checkout -b hotfix/<name>
 
 Merge в `main`: **Squash**.
 
-В PR: шаблон (изменения, changelog, чеклист, как проверял).
+В PR: чеклист из шаблона (в т.ч. файл в `changelogs/unreleased/`).
 
 В `dev` Pull Request **не используются**.
 
-## Версии и CHANGELOG
+## Changelog
 
-[Semantic Versioning](https://semver.org/lang/ru/): `v<major>.<minor>.<patch>`.
+См. [changelogs/README.md](../changelogs/README.md).
 
-### Pull Request
+1. В ветке `feature/*` / `fix/*`:
 
-Шаблон PR: **Изменения**, **Changelog**, **Чеклист**, **Как проверял(а)**.
+```bash
+make changelog
+```
 
-### После merge PR в `main`
+Создаётся `changelogs/unreleased/<имя_ветки>.md` из `TEMPLATE.md`. На `dev` — запрещено.
 
-Workflow сохраняет секцию Changelog в `changelog/unreleased/pr-<номер>.md`.
+2. Заполнить категории (`Added`, `Changed`, …) и ссылку на PR в блоке `[MR]`.
+
+3. В PR в чеклисте отметить пункт про changelog.
 
 ### Релиз
 
 ```bash
 git checkout main && git pull origin main
+make release_changelog v=0.1.0
 git tag -a v0.1.0 -m "v0.1.0"
 git push origin v0.1.0
 ```
 
-Workflow `release.yml` собирает `CHANGELOG.md` и создаёт GitHub Release.
+`collector.py` переносит `unreleased/` в `CHANGELOG.md`, архивирует в `changelogs/0.1.0/`, создаёт пустую `unreleased/`.
 
-Локально:
-
-```bash
-python scripts/changelog_release.py 0.1.0
-```
+Workflow `release.yml` запускает сборку по тегу `v*`.
 
 ## Окружения
 

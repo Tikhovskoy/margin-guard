@@ -1,16 +1,9 @@
-# Changelog
+# История релизов
 
-Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
-Версии — [Semantic Versioning](https://semver.org/lang/ru/).
+Формат: [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).  
+Версии: [Semantic Versioning](https://semver.org/lang/ru/).
 
-Записи из merged PR накапливаются в `changelog/unreleased/` и переносятся в этот файл при релизе.
+Накопление изменений: файлы в `changelogs/unreleased/` (по одному на ветку).  
+Сборка релиза: `make release_changelog v=0.1.0`.
 
-## [Unreleased]
-
-### Added
-
-### Changed
-
-### Fixed
-
-### Removed
+Категории: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
