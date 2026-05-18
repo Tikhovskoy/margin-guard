@@ -24,6 +24,7 @@ docker compose up -d
 - Документация: http://localhost:8000/docs
 - Health: http://localhost:8000/health
 - Превью маржи (mock): http://localhost:8000/api/v1/margins/preview
+- Загрузка себестоимости (CSV): `POST /api/v1/cost-prices/upload`
 
 ## Запуск без Docker (только API)
 
