@@ -2,11 +2,12 @@
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from margin_guard.domain.entities import SkuOperation
 from margin_guard.domain.ports import OperationRepository
 from margin_guard.infrastructure.db.mappers import operation_to_row
-from margin_guard.infrastructure.db.models import SkuOperationRow
+from margin_guard.infrastructure.db.models import SkuOperationFeeRow, SkuOperationRow
 
 
 class SqlAlchemyOperationRepository(OperationRepository):
@@ -27,20 +28,28 @@ class SqlAlchemyOperationRepository(OperationRepository):
                 self._session.add(row)
                 affected += 1
                 continue
-            existing.revenue = row.revenue
+            existing.revenue = operation.revenue
             existing.fees.clear()
-            existing.fees.extend(row.fees)
+            for fee in operation.fees:
+                existing.fees.append(
+                    SkuOperationFeeRow(code=fee.code, amount=fee.amount),
+                )
             affected += 1
+        await self._session.flush()
         return affected
 
     async def _find_existing(
         self,
         operation: SkuOperation,
     ) -> SkuOperationRow | None:
-        stmt = select(SkuOperationRow).where(
-            SkuOperationRow.marketplace == operation.marketplace.value,
-            SkuOperationRow.sku == operation.sku,
-            SkuOperationRow.operation_date == operation.operation_date,
+        stmt = (
+            select(SkuOperationRow)
+            .options(selectinload(SkuOperationRow.fees))
+            .where(
+                SkuOperationRow.marketplace == operation.marketplace.value,
+                SkuOperationRow.sku == operation.sku,
+                SkuOperationRow.operation_date == operation.operation_date,
+            )
         )
         result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalars().first()

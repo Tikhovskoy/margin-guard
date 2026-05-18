@@ -13,8 +13,7 @@ def operation_to_row(operation: SkuOperation) -> SkuOperationRow:
         revenue=operation.revenue,
     )
     row.fees = [
-        SkuOperationFeeRow(code=fee.code, amount=fee.amount)
-        for fee in operation.fees
+        SkuOperationFeeRow(code=fee.code, amount=fee.amount) for fee in operation.fees
     ]
     return row
 
@@ -26,7 +25,5 @@ def row_to_operation(row: SkuOperationRow) -> SkuOperation:
         sku=row.sku,
         operation_date=row.operation_date,
         revenue=row.revenue,
-        fees=tuple(
-            FeeLine(code=fee.code, amount=fee.amount) for fee in row.fees
-        ),
+        fees=tuple(FeeLine(code=fee.code, amount=fee.amount) for fee in row.fees),
     )
