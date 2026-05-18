@@ -34,6 +34,9 @@ def test_calculate_margins_use_case() -> None:
             fees=(FeeLine("commission", Decimal("400")),),
         ),
     ]
-    margins = CalculateMarginsUseCase().execute(ops, {"OZ-1": Decimal("100")})
+    margins = CalculateMarginsUseCase().execute(
+        ops,
+        {(Marketplace.OZON.value, "OZ-1"): Decimal("100")},
+    )
     assert len(margins) == 1
     assert margins[0].margin == Decimal("500")

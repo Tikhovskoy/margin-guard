@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from margin_guard.domain.entities import Marketplace, SkuOperation
+from margin_guard.domain.entities import CostPriceEntry, Marketplace, SkuOperation
 
 
 class MarketplaceAdapter(ABC):
@@ -29,3 +29,11 @@ class OperationRepository(ABC):
     @abstractmethod
     async def upsert_operations(self, operations: list[SkuOperation]) -> int:
         """Сохранить операции; вернуть число затронутых строк."""
+
+
+class CostPriceRepository(ABC):
+    """Сохранение себестоимости в БД."""
+
+    @abstractmethod
+    async def upsert_entries(self, entries: list[CostPriceEntry]) -> int:
+        """Сохранить записи; вернуть число затронутых строк."""

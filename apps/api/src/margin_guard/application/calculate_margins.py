@@ -12,11 +12,12 @@ class CalculateMarginsUseCase:
     def execute(
         self,
         operations: list[SkuOperation],
-        cost_by_sku: dict[str, Decimal],
+        cost_by_key: dict[tuple[str, str], Decimal],
     ) -> list[SkuMargin]:
         """Возвращает маржу по каждой операции."""
         results: list[SkuMargin] = []
         for op in operations:
-            cost = cost_by_sku.get(op.sku, Decimal("0"))
+            key = (op.marketplace.value, op.sku)
+            cost = cost_by_key.get(key, Decimal("0"))
             results.append(calculate_sku_margin(op, cost))
         return results
