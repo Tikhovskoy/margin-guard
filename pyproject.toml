@@ -14,6 +14,7 @@ dev = [
     "mypy>=1.13.0",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+    "aiosqlite>=0.20.0",
 ]
 
 [tool.ruff]
@@ -23,6 +24,9 @@ src = ["apps/api/src", "apps/worker/src", "scripts", "changelogs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"apps/api/alembic/**" = ["UP035", "UP007"]
 
 [tool.mypy]
 python_version = "3.12"
