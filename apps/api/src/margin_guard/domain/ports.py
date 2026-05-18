@@ -21,3 +21,11 @@ class MarketplaceAdapter(ABC):
         date_to: date,
     ) -> list[SkuOperation]:
         """Загрузить операции за период."""
+
+
+class OperationRepository(ABC):
+    """Сохранение операций маркетплейсов в БД."""
+
+    @abstractmethod
+    async def upsert_operations(self, operations: list[SkuOperation]) -> int:
+        """Сохранить операции; вернуть число затронутых строк."""
