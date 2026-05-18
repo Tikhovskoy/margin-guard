@@ -19,8 +19,12 @@
 
 ```bash
 cp .env.example .env
+uv sync --all-packages --group dev
 docker compose up -d
 ```
+
+- API: http://localhost:8000/docs  
+- Health: http://localhost:8000/health  
 
 Подробнее: [docs/development.md](docs/development.md).
 
