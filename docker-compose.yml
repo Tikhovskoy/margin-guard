@@ -31,8 +31,13 @@ services:
       dockerfile: apps/api/Dockerfile
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://margin_guard:margin_guard@postgres:5432/margin_guard
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,6 +52,11 @@ services:
       dockerfile: apps/worker/Dockerfile
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://margin_guard:margin_guard@postgres:5432/margin_guard
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
     depends_on:
       postgres:
         condition: service_healthy
