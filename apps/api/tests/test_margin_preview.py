@@ -46,7 +46,9 @@ def test_preview_uses_cost_prices_from_repository(
         FakeCostPriceRepository,
     )
 
-    response = TestClient(create_app()).get("/api/v1/margins/preview")
+    response = TestClient(create_app()).get(
+        "/api/v1/margins/preview?threshold_percent=40",
+    )
 
     assert response.status_code == 200
     items = response.json()["items"]
@@ -55,3 +57,12 @@ def test_preview_uses_cost_prices_from_repository(
     assert items[0]["margin"] == "555.00"
     assert items[1]["sku"] == "WB-002"
     assert items[1]["cost_price"] == "0"
+    alerts = response.json()["alerts"]
+    assert alerts == [
+        {
+            "sku": "WB-001",
+            "margin_percent": "37.00",
+            "threshold_percent": "40",
+            "message": "⚠️ Низкая маржа: wildberries / WB-001 — 37.00% при пороге 40%",
+        },
+    ]
