@@ -37,3 +37,7 @@ class CostPriceRepository(ABC):
     @abstractmethod
     async def upsert_entries(self, entries: list[CostPriceEntry]) -> int:
         """Сохранить записи; вернуть число затронутых строк."""
+
+    @abstractmethod
+    async def list_entries(self, marketplace: Marketplace) -> list[CostPriceEntry]:
+        """Вернуть себестоимость всех SKU маркетплейса."""
