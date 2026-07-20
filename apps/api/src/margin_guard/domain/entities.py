@@ -57,3 +57,21 @@ class SkuMargin:
         if self.revenue == 0:
             return Decimal("0")
         return (self.margin / self.revenue * 100).quantize(Decimal("0.01"))
+
+
+@dataclass(frozen=True, slots=True)
+class MarginAlert:
+    """Предупреждение о марже SKU ниже заданного порога."""
+
+    marketplace: Marketplace
+    sku: str
+    margin_percent: Decimal
+    threshold_percent: Decimal
+
+    @property
+    def message(self) -> str:
+        """Текст уведомления в формате Telegram."""
+        return (
+            f"⚠️ Низкая маржа: {self.marketplace.value} / {self.sku} — "
+            f"{self.margin_percent}% при пороге {self.threshold_percent}%"
+        )
