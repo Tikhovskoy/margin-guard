@@ -13,16 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-
-      - name: Собрать CHANGELOG
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          uv run changelogs/collector.py "$VERSION"
 
       - name: Подготовить заметки релиза
         run: |
@@ -32,18 +25,6 @@ jobs:
             found { print }
             found && /^## \[/ && $0 !~ "^## \\[" ver "\\]" { exit }
           ' CHANGELOG.md > release_notes.md
-
-      - name: Закоммитить CHANGELOG
-        run: |
-          git config user.name "Виктор Тиховской"
-          git config user.email "tihovskoyviktor@icloud.com"
-          git add CHANGELOG.md changelogs/
-          if git diff --staged --quiet; then
-            echo "Nothing to commit"
-            exit 0
-          fi
-          git commit -m "chore: обновил CHANGELOG для ${GITHUB_REF_NAME}"
-          git push origin main
 
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
