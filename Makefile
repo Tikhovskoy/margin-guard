@@ -1,4 +1,4 @@
-.PHONY: help changelog release_changelog
+.PHONY: help changelog demo release_changelog
 
 BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 SANITIZED_BRANCH_NAME := $(shell python changelogs/sanitize_filename.py $(BRANCH_NAME))
@@ -14,6 +14,9 @@ else
 	@cp changelogs/TEMPLATE.md changelogs/unreleased/$(SANITIZED_BRANCH_NAME).md
 	@echo Создан changelogs/unreleased/$(SANITIZED_BRANCH_NAME).md
 endif
+
+demo: ## Поднять Docker, применить миграции и загрузить demo CSV
+	uv run python scripts/run_demo.py
 
 v ?=
 
