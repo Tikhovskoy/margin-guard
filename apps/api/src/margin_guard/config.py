@@ -1,5 +1,6 @@
 """Настройки приложения."""
 
+from decimal import Decimal
 from functools import lru_cache
 from typing import Literal
 
@@ -34,6 +35,7 @@ class Settings(BaseSettings):
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000
+    low_margin_threshold_percent: Decimal = Decimal("20")
 
 
 @lru_cache

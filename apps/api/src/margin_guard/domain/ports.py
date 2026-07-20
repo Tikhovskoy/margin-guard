@@ -3,7 +3,12 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
-from margin_guard.domain.entities import CostPriceEntry, Marketplace, SkuOperation
+from margin_guard.domain.entities import (
+    CostPriceEntry,
+    MarginAlert,
+    Marketplace,
+    SkuOperation,
+)
 
 
 class MarketplaceAdapter(ABC):
@@ -41,3 +46,11 @@ class CostPriceRepository(ABC):
     @abstractmethod
     async def list_entries(self, marketplace: Marketplace) -> list[CostPriceEntry]:
         """Вернуть себестоимость всех SKU маркетплейса."""
+
+
+class AlertNotifier(ABC):
+    """Отправка уведомлений о низкой марже."""
+
+    @abstractmethod
+    async def send(self, alerts: list[MarginAlert]) -> None:
+        """Отправить список предупреждений."""
