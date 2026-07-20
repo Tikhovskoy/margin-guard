@@ -73,6 +73,17 @@ mock Telegram-уведомление:
 ⚠️ Низкая маржа: wildberries / WB-002 — 13.75% при пороге 20%
 ```
 
+## Demo: preview и alert
+
+Результат preview сразу показывает SKU с низкой маржой и порог, при котором
+срабатывает alert:
+
+![Preview маржи с alert](docs/assets/demo-margin-preview.png)
+
+Короткий demo-flow: загрузка CSV, расчёт маржи и обнаружение проблемного SKU.
+
+![Demo-flow: CSV → preview → alert](docs/assets/demo-flow.gif)
+
 ## Архитектура
 
 ```mermaid
@@ -106,7 +117,8 @@ GitHub Actions выполняет эти проверки на pull request и p
 
 ## Развитие
 
-Следующие этапы: web-дашборд, live-интеграции с маркетплейсами и релиз `v0.1.0`.
+Текущая стабильная версия — [`v0.1.0`](https://github.com/Tikhovskoy/margin-guard/releases/tag/v0.1.0).
+Следующие этапы: web-дашборд и live-интеграции с маркетплейсами.
 
 Подробные инструкции: [локальная разработка](docs/development.md),
 [workflow](docs/WORKFLOW.md), [contributing](docs/CONTRIBUTING.md) и
