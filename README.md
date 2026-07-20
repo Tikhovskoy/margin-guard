@@ -18,13 +18,18 @@
 ## Быстрый старт
 
 ```bash
-cp .env.example .env
 uv sync --all-packages --group dev
-docker compose up -d
+uv run python scripts/run_demo.py
 ```
 
-- API: http://localhost:8000/docs  
-- Health: http://localhost:8000/health  
+Команда создаёт `.env` из шаблона при первом запуске, поднимает Docker Compose,
+применяет миграции и загружает demo CSV.
+
+- API: `http://localhost:8000/docs` (или порт из `API_PORT`)
+- Health: `http://localhost:8000/health`
+- Preview: `http://localhost:8000/api/v1/margins/preview`
+
+Для Unix-окружения доступен эквивалент: `make demo`.
 
 Подробнее: [docs/development.md](docs/development.md).
 

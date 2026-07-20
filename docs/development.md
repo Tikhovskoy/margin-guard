@@ -14,6 +14,19 @@ cp .env.example .env
 uv sync --all-packages --group dev
 ```
 
+## Demo-режим
+
+```bash
+uv run python scripts/run_demo.py
+```
+
+Скрипт создаёт `.env` из `.env.example`, если его ещё нет, запускает Docker
+Compose, применяет миграции Alembic, загружает `demo/cost-prices.csv` и выводит
+preview маржи. Для Unix-окружения доступен эквивалент: `make demo`.
+
+Внешний порт API задаётся переменной `API_PORT` в `.env` и по умолчанию равен
+`8000`.
+
 ## Запуск (Docker)
 
 ```bash

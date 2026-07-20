@@ -44,4 +44,4 @@ disallow_untyped_decorators = false
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["apps/api/tests", "scripts/tests"]
-pythonpath = ["apps/api/src", "apps/worker/src", "changelogs"]
+pythonpath = ["apps/api/src", "apps/worker/src", "changelogs", "scripts"]
