@@ -30,4 +30,7 @@ async def test_upsert_inserts_and_updates(db_session: AsyncSession) -> None:
     second = await repository.upsert_entries([updated])
     assert second == 1
 
+    entries = await repository.list_entries(Marketplace.WILDBERRIES)
+    assert entries == [updated]
+
     await db_session.commit()
