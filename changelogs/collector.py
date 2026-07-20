@@ -89,19 +89,25 @@ class ChangelogCollector:
         self.main_changelog.touch(exist_ok=True)
 
         changelog_lines = self.main_changelog.read_text(encoding="utf-8").splitlines()
-        old_changelog_block_start_index = 0
+        old_changelog_block_start_index: int | None = None
         for line_index, line in enumerate(changelog_lines):
             if re.match(rf"## \[{self.VERSION_PATTERN}]", line):
                 old_changelog_block_start_index = line_index
                 break
 
-        header = changelog_lines[:old_changelog_block_start_index] or [
-            "# История релизов\n",
-            "",
-        ]
-        old_changelog_block = changelog_lines[old_changelog_block_start_index:]
+        if old_changelog_block_start_index is None:
+            header = changelog_lines
+            old_changelog_block: list[str] = []
+        else:
+            header = changelog_lines[:old_changelog_block_start_index]
+            old_changelog_block = changelog_lines[old_changelog_block_start_index:]
 
-        return "\n".join(header + [new_changelog_block] + old_changelog_block)
+        sections = [
+            "\n".join(header).rstrip(),
+            new_changelog_block.rstrip(),
+            "\n".join(old_changelog_block).rstrip(),
+        ]
+        return "\n\n".join(section for section in sections if section) + "\n"
 
     def _render_new_changelog_block(self) -> str:
         changelog_content = ChangelogContent.parse_changelog(
