@@ -1,47 +1,109 @@
 # margin-guard
 
-Сервис контроля маржи для селлеров Wildberries и Ozon.
+Сервис контроля маржи для продавцов Wildberries и Ozon. Он объединяет
+себестоимость товаров с операциями маркетплейса и показывает маржу по каждому
+SKU.
 
-## Возможности (roadmap)
+## Зачем нужен
 
-- Синхронизация финансовых отчётов (WB, Ozon)
-- Расчёт маржи по SKU с учётом себестоимости
-- Веб-дашборд и Telegram-алерты
-- Режимы `mock` и `live` для интеграций с маркетплейсами
+Отчёты маркетплейсов содержат выручку и удержания, но не знают фактическую
+себестоимость товара. Без объединения этих данных невозможно быстро увидеть,
+какие SKU теряют деньги.
 
-## Стек
+`margin-guard` загружает себестоимость из CSV, хранит её в PostgreSQL и
+рассчитывает маржу на данных Wildberries или Ozon. В demo-режиме используются
+воспроизводимые mock-операции, поэтому сервис можно запустить без ключей API.
 
-- **Backend:** Python 3.12, FastAPI, SQLAlchemy, Celery, PostgreSQL, Redis
-- **Frontend:** Next.js, TypeScript
-- **Infra:** Docker Compose, GitHub Actions
+## Что уже работает
 
-## Быстрый старт
+- загрузка и обновление себестоимости из UTF-8 CSV;
+- расчёт выручки, удержаний, маржи и процента маржи по SKU;
+- mock-адаптеры Wildberries и Ozon;
+- PostgreSQL, Redis, Celery и миграции Alembic;
+- demo-flow одной командой;
+- тесты, Ruff, mypy и CI со сборкой Docker-образов.
+
+## Быстрый demo-запуск
+
+Требования: Python 3.12+, [uv](https://docs.astral.sh/uv/) и Docker Compose.
 
 ```bash
 uv sync --all-packages --group dev
 uv run python scripts/run_demo.py
 ```
 
-Команда создаёт `.env` из шаблона при первом запуске, поднимает Docker Compose,
-применяет миграции и загружает demo CSV.
+Скрипт при первом запуске создаёт `.env` из шаблона, поднимает Docker Compose,
+применяет миграции, загружает `demo/cost-prices.csv` и выводит результат
+расчёта. Для Unix-окружения доступен эквивалент: `make demo`.
 
-- API: `http://localhost:8000/docs` (или порт из `API_PORT`)
-- Health: `http://localhost:8000/health`
-- Preview: `http://localhost:8000/api/v1/margins/preview`
+После запуска:
 
-Для Unix-окружения доступен эквивалент: `make demo`.
+- OpenAPI: `http://localhost:8000/docs`;
+- healthcheck: `http://localhost:8000/health`;
+- preview маржи: `http://localhost:8000/api/v1/margins/preview`.
 
-Подробнее: [docs/development.md](docs/development.md).
+Если порт `8000` занят, укажите другой в `.env`, например `API_PORT=8001`.
 
-## Ветки
+## Demo-flow
 
-| Ветка | Назначение |
-|-------|------------|
-| `main` | Стабильная версия |
-| `dev` | Обкатка изменений |
-| `feature/*` | Новые задачи (от `main`, PR в `main`) |
+```text
+demo/cost-prices.csv
+        ↓
+POST /api/v1/cost-prices/upload
+        ↓
+PostgreSQL (себестоимость по marketplace + SKU)
+        ↓
+GET /api/v1/margins/preview
+        ↓
+выручка − удержания − себестоимость = маржа
+```
 
-Документация: [WORKFLOW.md](docs/WORKFLOW.md), [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+Для demo CSV preview Wildberries возвращает, например:
+
+| SKU | Себестоимость | Выручка | Удержания | Маржа |
+| --- | ---: | ---: | ---: | ---: |
+| `WB-001` | 600.00 | 1500.00 | 345.00 | 555.00 |
+| `WB-002` | 250.00 | 800.00 | 440.00 | 110.00 |
+
+## Архитектура
+
+```mermaid
+flowchart LR
+    CSV["CSV себестоимости"] --> API["FastAPI"]
+    API --> APP["Application use cases"]
+    APP --> DOMAIN["Domain: маржа и порты"]
+    APP --> DB["PostgreSQL"]
+    API --> ADAPTER["WB / Ozon adapters"]
+    ADAPTER --> APP
+    WORKER["Celery worker"] --> ADAPTER
+    WORKER --> DB
+    WORKER --> REDIS["Redis"]
+```
+
+Это monorepo со слоями `domain → application → infrastructure → api`.
+Интеграции маркетплейсов реализуются через порт `MarketplaceAdapter`, а режимы
+`mock` и `live` переключаются конфигурацией.
+
+## Проверка качества
+
+```bash
+uv run pytest
+uv run ruff check apps/api apps/worker scripts
+uv run ruff format --check apps/api apps/worker scripts
+uv run mypy apps/api/src
+docker compose build
+```
+
+GitHub Actions выполняет эти проверки на pull request и push в `main` и `dev`.
+
+## Развитие
+
+Следующие этапы: web-дашборд, mock Telegram-алерт для отрицательной или низкой
+маржи, live-интеграции с маркетплейсами и релиз `v0.1.0`.
+
+Подробные инструкции: [локальная разработка](docs/development.md),
+[workflow](docs/WORKFLOW.md), [contributing](docs/CONTRIBUTING.md) и
+[архитектурное решение](docs/adr/0001-architecture.md).
 
 ## Лицензия
 
