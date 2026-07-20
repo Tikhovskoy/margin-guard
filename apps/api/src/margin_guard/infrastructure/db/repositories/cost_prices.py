@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from margin_guard.domain.entities import CostPriceEntry
+from margin_guard.domain.entities import CostPriceEntry, Marketplace
 from margin_guard.domain.ports import CostPriceRepository
 from margin_guard.infrastructure.db.models import SkuCostPriceRow
 
@@ -40,6 +40,20 @@ class SqlAlchemyCostPriceRepository(CostPriceRepository):
             affected += 1
         await self._session.flush()
         return affected
+
+    async def list_entries(self, marketplace: Marketplace) -> list[CostPriceEntry]:
+        stmt = select(SkuCostPriceRow).where(
+            SkuCostPriceRow.marketplace == marketplace.value,
+        )
+        result = await self._session.execute(stmt)
+        return [
+            CostPriceEntry(
+                marketplace=marketplace,
+                sku=row.sku,
+                cost_price=row.cost_price,
+            )
+            for row in result.scalars()
+        ]
 
     async def _find_existing(self, entry: CostPriceEntry) -> SkuCostPriceRow | None:
         stmt = select(SkuCostPriceRow).where(

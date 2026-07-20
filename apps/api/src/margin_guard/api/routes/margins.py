@@ -1,15 +1,19 @@
 """Превью расчёта маржи (mock)."""
 
 from datetime import date, timedelta
-from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from margin_guard.application.calculate_margins import CalculateMarginsUseCase
+from margin_guard.application.get_cost_prices import GetCostPricesForMarketplace
 from margin_guard.config import get_settings
 from margin_guard.domain.entities import Marketplace
+from margin_guard.infrastructure.db.repositories.cost_prices import (
+    SqlAlchemyCostPriceRepository,
+)
+from margin_guard.infrastructure.db.session import session_scope
 from margin_guard.infrastructure.marketplaces.factory import (
     LiveAdapterNotConfiguredError,
     create_adapter,
@@ -39,20 +43,8 @@ class MarginsPreviewResponse(BaseModel):
 @router.get("/preview", response_model=MarginsPreviewResponse)
 async def preview_margins(
     marketplace: Annotated[Marketplace, Query()] = Marketplace.WILDBERRIES,
-    cost_wb_001: Annotated[
-        Decimal,
-        Query(description="Себестоимость WB-001"),
-    ] = Decimal("400"),
-    cost_wb_002: Annotated[
-        Decimal,
-        Query(description="Себестоимость WB-002"),
-    ] = Decimal("200"),
-    cost_oz_101: Annotated[
-        Decimal,
-        Query(description="Себестоимость OZ-101"),
-    ] = Decimal("500"),
 ) -> MarginsPreviewResponse:
-    """Демо расчёта маржи на mock-данных."""
+    """Демо расчёта маржи на mock-операциях и себестоимости из БД."""
     settings = get_settings()
     try:
         adapter = create_adapter(marketplace, settings)
@@ -63,11 +55,9 @@ async def preview_margins(
     date_from = date_to - timedelta(days=7)
     operations = await adapter.fetch_operations(date_from, date_to)
 
-    cost_map: dict[tuple[str, str], Decimal] = {
-        (Marketplace.WILDBERRIES.value, "WB-001"): cost_wb_001,
-        (Marketplace.WILDBERRIES.value, "WB-002"): cost_wb_002,
-        (Marketplace.OZON.value, "OZ-101"): cost_oz_101,
-    }
+    async with session_scope() as session:
+        repository = SqlAlchemyCostPriceRepository(session)
+        cost_map = await GetCostPricesForMarketplace(repository).execute(marketplace)
     margins = CalculateMarginsUseCase().execute(operations, cost_map)
 
     return MarginsPreviewResponse(
