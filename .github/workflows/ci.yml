@@ -41,3 +41,14 @@ jobs:
         env:
           PYTHONPATH: apps/api/src:apps/worker/src
         run: uv run pytest
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Build Docker images
+        run: docker compose build
