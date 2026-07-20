@@ -27,6 +27,19 @@ preview маржи. Для Unix-окружения доступен эквива
 Внешний порт API задаётся переменной `API_PORT` в `.env` и по умолчанию равен
 `8000`.
 
+## Mock Telegram-алерты
+
+`GET /api/v1/margins/preview` возвращает предупреждения для SKU, у которых
+процент маржи ниже `LOW_MARGIN_THRESHOLD_PERCENT` (по умолчанию `20`). В
+mock-режиме сообщения не отправляются во внешний Telegram API, а выводятся в
+структурированный лог и в поле `alerts` ответа preview.
+
+Порог можно изменить в `.env` или разово передать query-параметром:
+
+```text
+GET /api/v1/margins/preview?threshold_percent=25
+```
+
 ## Запуск (Docker)
 
 ```bash

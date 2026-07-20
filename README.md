@@ -19,6 +19,7 @@ SKU.
 - загрузка и обновление себестоимости из UTF-8 CSV;
 - расчёт выручки, удержаний, маржи и процента маржи по SKU;
 - mock-адаптеры Wildberries и Ozon;
+- mock Telegram-алерты для SKU с низкой маржой;
 - PostgreSQL, Redis, Celery и миграции Alembic;
 - demo-flow одной командой;
 - тесты, Ruff, mypy и CI со сборкой Docker-образов.
@@ -65,6 +66,13 @@ GET /api/v1/margins/preview
 | `WB-001` | 600.00 | 1500.00 | 345.00 | 555.00 |
 | `WB-002` | 250.00 | 800.00 | 440.00 | 110.00 |
 
+При пороге `LOW_MARGIN_THRESHOLD_PERCENT=20` второй SKU дополнительно вернёт
+mock Telegram-уведомление:
+
+```text
+⚠️ Низкая маржа: wildberries / WB-002 — 13.75% при пороге 20%
+```
+
 ## Архитектура
 
 ```mermaid
@@ -98,8 +106,7 @@ GitHub Actions выполняет эти проверки на pull request и p
 
 ## Развитие
 
-Следующие этапы: web-дашборд, mock Telegram-алерт для отрицательной или низкой
-маржи, live-интеграции с маркетплейсами и релиз `v0.1.0`.
+Следующие этапы: web-дашборд, live-интеграции с маркетплейсами и релиз `v0.1.0`.
 
 Подробные инструкции: [локальная разработка](docs/development.md),
 [workflow](docs/WORKFLOW.md), [contributing](docs/CONTRIBUTING.md) и
