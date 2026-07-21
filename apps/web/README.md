@@ -1,19 +1,41 @@
 # margin-guard web
 
-Модуль frontend для dashboard контроля маржи.
+Модульный Next.js dashboard для контроля маржи.
 
-## Структура
+## Возможности
 
-- `app/components` — UI-компоненты dashboard;
-- `app/lib` — типы, mock-данные и клиент API;
-- `app/page.tsx` — композиция главной страницы.
+- получает preview маржи через FastAPI;
+- загружает CSV себестоимости в API;
+- показывает состояние подключения к данным;
+- фильтрует SKU по поиску и порогу маржи.
 
 ## Локальный запуск
 
+1. Запустите backend и зависимости из корня проекта:
+
+   ```bash
+   docker compose up -d
+   ```
+
+2. Создайте `.env.local` на основе `.env.example`. Если API опубликован на другом порту, задайте его адрес:
+
+   ```dotenv
+   MARGIN_GUARD_API_URL=http://localhost:8001
+   ```
+
+3. Установите зависимости и запустите dashboard:
+
+   ```bash
+   npm ci
+   npm run dev
+   ```
+
+## Проверки
+
 ```bash
-npm ci
-npm run dev
+npm run test
+npm run lint
+npm run build
 ```
 
-По умолчанию API ожидается на `http://localhost:8000`. Для другого адреса
-создайте `.env.local` на основе `.env.example`.
+Клиент обращается к внутренним маршрутам Next.js, которые проксируют запросы в FastAPI. Это позволяет сохранить единый API-адрес для локального запуска и дальнейшего развёртывания.
