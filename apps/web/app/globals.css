@@ -111,6 +111,13 @@
   .market-select b { font-size: 13px; }
   .chevron { margin-left: 6px; color: var(--muted); }
   .top-actions { display: flex; align-items: center; gap: 9px; }
+  .source-state { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; color: #5f716c; background: rgba(255,255,255,.48); font-size: 10px; font-weight: 650; }
+  .source-state i { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 0 3px rgba(24,166,120,.1); }
+  .source-state.loading i { background: var(--champagne); animation: breathe 1s ease infinite; }
+  .source-state.demo { color: #8c702d; background: #fff9e9; }
+  .source-state.demo i { background: #d3a53f; }
+  .source-state.error { color: #a4564d; background: #fff2ef; }
+  .source-state.error i { background: var(--coral); }
   .period-button, .round-button, .profile-button { border: 1px solid var(--line); background: rgba(255,255,255,.58); backdrop-filter: blur(12px); cursor: pointer; transition: transform .2s ease, background .2s ease; }
   .period-button:hover, .round-button:hover { transform: translateY(-2px); background: #fff; }
   .period-button { padding: 11px 14px; border-radius: 11px; color: #59625f; font-size: 12px; }
@@ -128,6 +135,12 @@
   .upload-button { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; padding: 13px 18px 13px 12px; border: 0; border-radius: 13px; color: #f6fffb; background: linear-gradient(135deg, #214e43, #17372f); font-size: 13px; font-weight: 700; box-shadow: 0 15px 30px rgba(25,61,52,.18); cursor: pointer; transition: transform .25s ease, box-shadow .25s ease; }
   .upload-button span { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 8px; color: var(--forest); background: var(--champagne); font-size: 17px; }
   .upload-button:hover { transform: translateY(-3px); box-shadow: 0 20px 38px rgba(25,61,52,.24); }
+  .upload-button:disabled { cursor: wait; opacity: .7; transform: none; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; clip-path: inset(50%); }
+  .data-notice { display: flex; align-items: center; gap: 9px; max-width: 680px; margin: -10px 0 20px; padding: 10px 13px; border: 1px solid #ead7a4; border-radius: 12px; color: #80631d; background: #fff8e6; font-size: 12px; animation: reveal .35s ease both; }
+  .data-notice > span { display: grid; place-items: center; width: 19px; height: 19px; flex: 0 0 auto; border-radius: 50%; color: #8a6717; background: #f3e0ac; font-weight: 800; }
+  .data-notice.error { border-color: #efd0ca; color: #a24f46; background: #fff2ef; }
+  .data-notice.error > span { color: #a24f46; background: #f6d6d0; }
 
   .overview-grid { display: grid; grid-template-columns: minmax(460px, 1.65fr) minmax(250px, .82fr) minmax(250px, .72fr); gap: 18px; }
   .pulse-card, .premium-metric, .risk-card, .products-panel { border: 1px solid rgba(255,255,255,.65); background: var(--surface); backdrop-filter: blur(18px); box-shadow: var(--shadow); }
@@ -269,6 +282,7 @@
     .sidebar { display: none; }
     .workspace { width: 100%; padding: 18px 14px 40px; }
     .period-button { display: none; }
+    .source-state { display: none; }
     .intro { align-items: start; flex-direction: column; padding: 34px 2px 25px; }
     .intro h1 { font-size: 37px; }
     .intro-copy { font-size: 11px; }

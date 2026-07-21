@@ -1,22 +1,53 @@
-export type MarginPreview = {
-  marketplace: string;
-  items: Array<{
-    sku: string;
-    revenue: string;
-    marketplace_fees: string;
-    cost_price: string;
-    margin: string;
-    margin_percent: string;
-  }>;
-  alerts: Array<{ sku: string; margin_percent: string; threshold_percent: string; message: string }>;
+import { getMarginStatus, productNames, type MarginRow } from "./margin-data";
+
+type MarginPreviewItem = {
+  sku: string;
+  revenue: string;
+  marketplace_fees: string;
+  cost_price: string;
+  margin: string;
+  margin_percent: string;
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+type MarginPreview = {
+  marketplace: string;
+  items: MarginPreviewItem[];
+};
 
-export async function getMarginPreview(): Promise<MarginPreview> {
-  const response = await fetch(`${apiUrl}/api/v1/margins/preview`);
-  if (!response.ok) {
-    throw new Error("Не удалось загрузить preview маржи.");
-  }
-  return response.json() as Promise<MarginPreview>;
+type UploadResponse = { upserted: number };
+
+async function readError(response: Response) {
+  const body = await response.json().catch(() => null) as { detail?: string } | null;
+  return body?.detail ?? "Сервис временно недоступен.";
+}
+
+export async function getMarginPreview(threshold: number): Promise<MarginRow[]> {
+  const response = await fetch(`/api/margins?threshold_percent=${threshold}`, {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(await readError(response));
+
+  const preview = await response.json() as MarginPreview;
+  return preview.items.map((item) => {
+    const percent = Number(item.margin_percent);
+    return {
+      sku: item.sku,
+      product: productNames[item.sku] ?? `Товар ${item.sku}`,
+      revenue: Number(item.revenue),
+      fees: Number(item.marketplace_fees),
+      cost: Number(item.cost_price),
+      margin: Number(item.margin),
+      percent,
+      status: getMarginStatus(percent),
+    };
+  });
+}
+
+export async function uploadCostPrices(file: File): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/cost-prices", { method: "POST", body: formData });
+  if (!response.ok) throw new Error(await readError(response));
+  return response.json() as Promise<UploadResponse>;
 }

@@ -6,7 +6,7 @@ const navigation = [
   { href: "#overview", icon: "◒", label: "Обзор" },
   { href: "#margins", icon: "⌁", label: "Юнит-экономика" },
   { href: "#alerts", icon: "◇", label: "Сигналы" },
-  { href: "#cost", icon: "↗", label: "Себестоимость" },
+  { href: "#margins", icon: "↗", label: "Себестоимость" },
 ];
 
 export function Sidebar({ alertCount }: SidebarProps) {
