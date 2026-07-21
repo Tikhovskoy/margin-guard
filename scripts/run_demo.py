@@ -8,6 +8,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
+from typing import Protocol, cast
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -52,6 +53,23 @@ def run_command(command: list[str]) -> None:
     subprocess.run(command, cwd=ROOT, check=True)
 
 
+class ConsoleStream(Protocol):
+    encoding: str | None
+
+    def reconfigure(self, *, encoding: str) -> None: ...
+
+
+def configure_console_encoding(stream: ConsoleStream) -> None:
+    """Переключить вывод консоли на UTF-8, если поток это поддерживает."""
+    if stream.encoding and stream.encoding.lower() == "utf-8":
+        return
+
+    try:
+        stream.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError, ValueError):
+        return
+
+
 def upload_seed(port: int) -> str:
     """Загрузить seed CSV с повторными попытками, пока API запускается."""
     body, content_type = make_multipart_file(SEED_FILE)
@@ -64,7 +82,7 @@ def upload_seed(port: int) -> str:
     for attempt in range(10):
         try:
             with urlopen(request, timeout=5) as response:  # noqa: S310
-                return response.read().decode("utf-8")
+                return str(response.read().decode("utf-8"))
         except (OSError, URLError):
             if attempt == 9:
                 raise
@@ -76,7 +94,7 @@ def get_preview(port: int) -> str:
     """Получить итог demo-расчёта маржи."""
     url = f"http://localhost:{port}/api/v1/margins/preview"
     with urlopen(url, timeout=5) as response:  # noqa: S310
-        return response.read().decode("utf-8")
+        return str(response.read().decode("utf-8"))
 
 
 def ensure_env_file() -> None:
@@ -89,6 +107,8 @@ def ensure_env_file() -> None:
 
 def main() -> None:
     """Запустить полный демонстрационный сценарий."""
+    configure_console_encoding(cast(ConsoleStream, sys.stdout))
+    configure_console_encoding(cast(ConsoleStream, sys.stderr))
     ensure_env_file()
     port = get_api_port(ENV_FILE)
     run_command(["docker", "compose", "up", "-d", "--build"])
