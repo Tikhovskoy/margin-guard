@@ -23,6 +23,7 @@ SKU.
 - PostgreSQL, Redis, Celery и миграции Alembic;
 - demo-flow одной командой;
 - тесты, Ruff, mypy и CI со сборкой Docker-образов.
+- web dashboard на Next.js: preview из API, загрузка CSV себестоимости и фильтрация рисков.
 
 ## Быстрый demo-запуск
 
@@ -118,7 +119,7 @@ GitHub Actions выполняет эти проверки на pull request и p
 ## Развитие
 
 Текущая стабильная версия — [`v0.1.0`](https://github.com/Tikhovskoy/margin-guard/releases/tag/v0.1.0).
-Следующие этапы: web-дашборд и live-интеграции с маркетплейсами.
+Web dashboard работает с API в mock-режиме. Следующий этап — live-интеграции с маркетплейсами.
 
 Подробные инструкции: [локальная разработка](docs/development.md),
 [workflow](docs/WORKFLOW.md), [contributing](docs/CONTRIBUTING.md) и
