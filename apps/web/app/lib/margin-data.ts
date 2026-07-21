@@ -11,6 +11,15 @@ export type MarginRow = {
   status: MarginStatus;
 };
 
+export type MarginPreviewItem = {
+  sku: string;
+  revenue: string;
+  marketplace_fees: string;
+  cost_price: string;
+  margin: string;
+  margin_percent: string;
+};
+
 export const productNames: Record<string, string> = {
   "WB-001": "Термокружка 450 мл",
   "WB-002": "Органайзер для кухни",
@@ -38,4 +47,20 @@ export function getMarginStatus(percent: number): MarginStatus {
   if (percent < 20) return "critical";
   if (percent < 25) return "attention";
   return "healthy";
+}
+
+export function mapMarginPreviewItems(items: MarginPreviewItem[]): MarginRow[] {
+  return items.map((item) => {
+    const percent = Number(item.margin_percent);
+    return {
+      sku: item.sku,
+      product: productNames[item.sku] ?? `Товар ${item.sku}`,
+      revenue: Number(item.revenue),
+      fees: Number(item.marketplace_fees),
+      cost: Number(item.cost_price),
+      margin: Number(item.margin),
+      percent,
+      status: getMarginStatus(percent),
+    };
+  });
 }

@@ -1,13 +1,8 @@
-import { getMarginStatus, productNames, type MarginRow } from "./margin-data";
-
-type MarginPreviewItem = {
-  sku: string;
-  revenue: string;
-  marketplace_fees: string;
-  cost_price: string;
-  margin: string;
-  margin_percent: string;
-};
+import {
+  mapMarginPreviewItems,
+  type MarginPreviewItem,
+  type MarginRow,
+} from "./margin-data";
 
 type MarginPreview = {
   marketplace: string;
@@ -28,19 +23,7 @@ export async function getMarginPreview(threshold: number): Promise<MarginRow[]> 
   if (!response.ok) throw new Error(await readError(response));
 
   const preview = await response.json() as MarginPreview;
-  return preview.items.map((item) => {
-    const percent = Number(item.margin_percent);
-    return {
-      sku: item.sku,
-      product: productNames[item.sku] ?? `Товар ${item.sku}`,
-      revenue: Number(item.revenue),
-      fees: Number(item.marketplace_fees),
-      cost: Number(item.cost_price),
-      margin: Number(item.margin),
-      percent,
-      status: getMarginStatus(percent),
-    };
-  });
+  return mapMarginPreviewItems(preview.items);
 }
 
 export async function uploadCostPrices(file: File): Promise<UploadResponse> {
