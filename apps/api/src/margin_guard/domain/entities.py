@@ -48,15 +48,22 @@ class SkuMargin:
     sku: str
     revenue: Decimal
     marketplace_fees: Decimal
-    cost_price: Decimal
-    margin: Decimal
+    cost_price: Decimal | None
+    margin: Decimal | None
 
     @property
-    def margin_percent(self) -> Decimal:
+    def margin_percent(self) -> Decimal | None:
         """Маржа в % от выручки."""
+        if self.margin is None:
+            return None
         if self.revenue == 0:
             return Decimal("0")
         return (self.margin / self.revenue * 100).quantize(Decimal("0.01"))
+
+    @property
+    def is_complete(self) -> bool:
+        """Достаточно ли данных для расчёта маржи."""
+        return self.cost_price is not None and self.margin is not None
 
 
 @dataclass(frozen=True, slots=True)

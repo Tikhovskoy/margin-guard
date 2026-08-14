@@ -40,3 +40,21 @@ def test_calculate_margins_use_case() -> None:
     )
     assert len(margins) == 1
     assert margins[0].margin == Decimal("500")
+
+
+def test_missing_cost_keeps_margin_incomplete() -> None:
+    """Неизвестная себестоимость не превращается в нулевую."""
+    operation = SkuOperation(
+        marketplace=Marketplace.WILDBERRIES,
+        sku="WB-NO-COST",
+        operation_date=date.today(),
+        revenue=Decimal("1000"),
+        fees=(FeeLine("commission", Decimal("200")),),
+    )
+
+    [margin] = CalculateMarginsUseCase().execute([operation], {})
+
+    assert margin.cost_price is None
+    assert margin.margin is None
+    assert margin.margin_percent is None
+    assert margin.is_complete is False

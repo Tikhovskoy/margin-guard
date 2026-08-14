@@ -18,6 +18,6 @@ class CalculateMarginsUseCase:
         results: list[SkuMargin] = []
         for op in operations:
             key = (op.marketplace.value, op.sku)
-            cost = cost_by_key.get(key, Decimal("0"))
+            cost = cost_by_key.get(key)
             results.append(calculate_sku_margin(op, cost))
         return results

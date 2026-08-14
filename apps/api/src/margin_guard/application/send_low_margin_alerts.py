@@ -19,15 +19,18 @@ class SendLowMarginAlerts:
         threshold_percent: Decimal,
     ) -> list[MarginAlert]:
         """Отправить уведомления для SKU с маржой ниже порога."""
-        alerts = [
-            MarginAlert(
-                marketplace=marketplace,
-                sku=margin.sku,
-                margin_percent=margin.margin_percent,
-                threshold_percent=threshold_percent,
+        alerts: list[MarginAlert] = []
+        for margin in margins:
+            margin_percent = margin.margin_percent
+            if margin_percent is None or margin_percent >= threshold_percent:
+                continue
+            alerts.append(
+                MarginAlert(
+                    marketplace=marketplace,
+                    sku=margin.sku,
+                    margin_percent=margin_percent,
+                    threshold_percent=threshold_percent,
+                )
             )
-            for margin in margins
-            if margin.margin_percent < threshold_percent
-        ]
         await self._notifier.send(alerts)
         return alerts
