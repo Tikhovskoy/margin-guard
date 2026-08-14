@@ -18,6 +18,7 @@ SKU.
 
 - загрузка и обновление себестоимости из UTF-8 CSV;
 - расчёт выручки, удержаний, маржи и процента маржи по SKU;
+- блокировка расчёта для SKU без себестоимости вместо подстановки нулевой цены;
 - mock-адаптеры Wildberries и Ozon;
 - mock Telegram-алерты для SKU с низкой маржой;
 - PostgreSQL, Redis, Celery и миграции Alembic;
@@ -59,6 +60,10 @@ GET /api/v1/margins/preview
         ↓
 выручка − удержания − себестоимость = маржа
 ```
+
+Ответ preview содержит `data_mode` (`mock` или `live`). Если себестоимость SKU
+неизвестна, поля `cost_price`, `margin` и `margin_percent` равны `null`, а
+`calculation_status` имеет значение `missing_cost`.
 
 Для demo CSV preview Wildberries возвращает, например:
 
