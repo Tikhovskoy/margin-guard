@@ -1,44 +1,62 @@
+import Image from "next/image";
+
+type DataMode = "loading" | "live" | "mock" | "demo" | "error";
+
 type SidebarProps = {
   alertCount: number;
+  dataMode: DataMode;
 };
 
 const navigation = [
-  { href: "#overview", icon: "◒", label: "Обзор" },
-  { href: "#margins", icon: "⌁", label: "Юнит-экономика" },
-  { href: "#alerts", icon: "◇", label: "Сигналы" },
-  { href: "#margins", icon: "↗", label: "Себестоимость" },
+  {
+    href: "#overview",
+    label: "Обзор",
+    icon: <path d="M4 13h6V4H4v9Zm0 7h6v-3H4v3Zm10 0h6V11h-6v9Zm0-13h6V4h-6v3Z" />,
+  },
+  {
+    href: "#risks",
+    label: "Риски",
+    icon: <><path d="M12 3 2.8 19h18.4L12 3Z" /><path d="M12 9v4m0 3h.01" /></>,
+  },
+  {
+    href: "#products",
+    label: "Все товары",
+    icon: <path d="M4 5h16M4 12h16M4 19h16" />,
+  },
 ];
 
-export function Sidebar({ alertCount }: SidebarProps) {
+const connectionCopy: Record<DataMode, { title: string; detail: string }> = {
+  loading: { title: "Подключение", detail: "Получаем preview" },
+  live: { title: "Реальные данные", detail: "Live API" },
+  mock: { title: "Демонстрация", detail: "Mock API" },
+  demo: { title: "Демонстрация", detail: "Локальный набор" },
+  error: { title: "Ошибка данных", detail: "Проверьте подключение" },
+};
+
+export function Sidebar({ alertCount, dataMode }: SidebarProps) {
+  const connection = connectionCopy[dataMode];
+
   return (
     <aside className="sidebar">
-      <a className="brand" href="#overview" aria-label="margin-guard — на главную">
-        <span className="brand-symbol"><i /><i /></span>
-        <span>margin<span>guard</span></span>
+      <a className="brand" href="#overview" aria-label="Margin Guard — к обзору">
+        <Image className="brand-logo" src="/brand/margin-guard-logo-v2.svg" alt="Margin Guard" width={160} height={33} priority />
+        <Image className="brand-mark" src="/brand/margin-guard-mark-v2.svg" alt="" width={28} height={28} />
       </a>
 
-      <div className="nav-caption">Пространство</div>
-      <nav aria-label="Основная навигация">
+      <p className="nav-label">Рабочая область</p>
+      <nav className="side-nav" aria-label="Основная навигация">
         {navigation.map((item, index) => (
-          <a className={`nav-link ${index === 0 ? "active" : ""}`} href={item.href} key={item.href}>
-            <span className="nav-icon">{item.icon}</span>
+          <a className={index === 0 ? "active" : ""} href={item.href} key={item.href}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg>
             <span>{item.label}</span>
-            {item.href === "#alerts" && <b>{alertCount}</b>}
+            {item.href === "#risks" && <b className="nav-count">{alertCount}</b>}
           </a>
         ))}
       </nav>
 
-      <div className="sidebar-insight">
-        <span className="insight-orbit"><i /></span>
-        <p>Здоровье портфеля</p>
-        <strong>87%</strong>
-        <small>Отличная динамика</small>
-      </div>
-
-      <div className="sidebar-footer">
-        <span className="live-dot" />
-        <div><b>Live sync</b><small>обновлено сейчас</small></div>
-        <button aria-label="Настройки">•••</button>
+      <div className={`sync sync-${dataMode}`} role="status">
+        <div className="sync-line"><i className="sync-dot" /><b>{connection.title}</b></div>
+        <small>{connection.detail}</small>
       </div>
     </aside>
   );
