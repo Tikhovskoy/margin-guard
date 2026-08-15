@@ -45,6 +45,7 @@ services:
         condition: service_healthy
     volumes:
       - ./apps/api/src:/app/apps/api/src:ro
+      - raw_source_data:/app/data/raw-sources
 
   worker:
     build:
@@ -68,3 +69,4 @@ services:
 
 volumes:
   postgres_data:
+  raw_source_data:
