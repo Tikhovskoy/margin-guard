@@ -64,6 +64,23 @@ docker compose up -d
 - Health: http://localhost:8000/health
 - Превью маржи (mock): http://localhost:8000/api/v1/margins/preview
 - Загрузка себестоимости (CSV): `POST /api/v1/cost-prices/upload`
+- Загрузка первичного файла: `POST /api/v1/raw-sources/upload`
+
+## Первичные файлы
+
+API принимает исходные CSV/XLSX и сохраняет их байты без изменений. Метаданные
+и SHA-256 записываются в PostgreSQL, а содержимое — в каталог
+`RAW_SOURCE_DIR` (по умолчанию `data/raw-sources`). Повторная загрузка одинакового
+файла для того же маркетплейса и типа источника возвращает существующую запись.
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/raw-sources/upload?marketplace=wildberries&source_type=realization_report" \
+  -F "file=@report.csv"
+```
+
+Доступные типы: `realization_report`, `marketplace_api`, `bank_statement`.
+Максимальный размер задаёт `RAW_SOURCE_MAX_UPLOAD_BYTES` (по умолчанию 25 МБ).
+В Docker содержимое сохраняется в именованном volume `raw_source_data`.
 
 ## Запуск без Docker (только API)
 
@@ -121,6 +138,7 @@ apps/api/src/margin_guard/
   domain/           # сущности, расчёт маржи, порты
   application/      # use cases
   infrastructure/   # адаптеры WB/Ozon, БД, репозитории
+    storage/         # локальное хранилище первичных файлов
   api/              # FastAPI routes
 apps/api/alembic/   # миграции Alembic
 apps/worker/        # Celery
