@@ -1,103 +1,148 @@
-import { formatCurrency, type MarginRow } from "../lib/margin-data";
+import Image from "next/image";
+import {
+  calculatePortfolioMetrics,
+  formatCurrency,
+  type MarginRow,
+} from "../lib/margin-data";
+
+type DataMode = "loading" | "live" | "mock" | "demo" | "error";
 
 type OverviewProps = {
   alertRows: MarginRow[];
-  dataMode: "loading" | "live" | "demo" | "error";
+  dataMode: DataMode;
   isUploading: boolean;
   notice: string;
-  onlyAlerts: boolean;
   rows: MarginRow[];
   threshold: number;
-  onToggleAlerts: () => void;
+  onSelectRow: (row: MarginRow) => void;
+  onShowAlerts: () => void;
   onUploadClick: () => void;
 };
 
-const chartValues = [34, 41, 38, 55, 49, 66, 61, 74, 69, 82, 78, 92];
-
-const modeLabel = {
+const modeLabel: Record<DataMode, string> = {
   loading: "Подключаем API",
-  live: "Данные из API",
-  demo: "Демо-данные",
+  live: "Реальные данные",
+  mock: "Mock API",
+  demo: "Локальный demo",
   error: "Ошибка загрузки",
 };
+
+const percent = (part: number, total: number) => total > 0 ? Math.max(0, part / total * 100) : 0;
+const formatPercent = (value: number) => value.toLocaleString("ru-RU", { maximumFractionDigits: 1 });
 
 export function Overview({
   alertRows,
   dataMode,
   isUploading,
   notice,
-  onlyAlerts,
   rows,
   threshold,
-  onToggleAlerts,
+  onSelectRow,
+  onShowAlerts,
   onUploadClick,
 }: OverviewProps) {
-  const totalRevenue = rows.reduce((total, row) => total + row.revenue, 0);
-  const totalMargin = rows.reduce((total, row) => total + row.margin, 0);
-  const averageMargin = rows.length
-    ? rows.reduce((total, row) => total + row.percent, 0) / rows.length
+  const metrics = calculatePortfolioMetrics(rows);
+  const sortedAlerts = [...alertRows].sort(
+    (a, b) => (a.percent ?? Number.POSITIVE_INFINITY) - (b.percent ?? Number.POSITIVE_INFINITY),
+  );
+  const primaryRisk = sortedAlerts[0] ?? null;
+  const riskShare = metrics.completeCount
+    ? Math.round(alertRows.length / metrics.completeCount * 100)
     : 0;
 
   return (
     <>
       <header className="topbar">
-        <div className="market-select"><span className="market-mark">W</span><div><small>Маркетплейс</small><b>Wildberries</b></div><span className="chevron">⌄</span></div>
-        <div className="top-actions">
-          <span className={`source-state ${dataMode}`}><i />{modeLabel[dataMode]}</span>
-          <button className="period-button">Последние 7 дней <span>⌄</span></button>
-          <button className="round-button" aria-label="Уведомления"><span className="notification-dot" />◇</button>
-          <button className="profile-button" aria-label="Профиль Виктора Тиховского">ВТ</button>
+        <Image className="mobile-brand" src="/brand/margin-guard-mark-v2.svg" alt="Margin Guard" width={28} height={28} />
+        <div className="market-tabs" role="tablist" aria-label="Маркетплейс">
+          <button type="button" role="tab" aria-selected="true">Wildberries</button>
+          <button type="button" role="tab" aria-selected="false" disabled title="Нет данных Ozon">Ozon · нет данных</button>
+        </div>
+        <div className="top-meta">
+          <span className={`data-state ${dataMode}`} role="status"><i />{modeLabel[dataMode]}</span>
         </div>
       </header>
 
-      <section className="intro" id="overview">
+      <section className="heading" id="overview">
         <div>
-          <p className="eyebrow"><span /> Финансовый радар</p>
-          <h1>Маржа под контролем.<br /><em>Рост — в фокусе.</em></h1>
-          <p className="intro-copy">Вся экономика продаж в одном ритме: прибыль, риски и точки роста без информационного шума.</p>
+          <p className="eyebrow">Финансовый контроль · Wildberries</p>
+          <h1>Контроль маржи</h1>
+          <p className="heading-copy">Сначала — позиции, где предварительный результат ниже безопасного порога. Затем — состав учтённых расходов каждого SKU.</p>
         </div>
-        <button className="upload-button" disabled={isUploading} onClick={onUploadClick}><span>＋</span>{isUploading ? "Загружаем CSV…" : "Загрузить себестоимость"}</button>
+        <button className="primary" type="button" disabled={isUploading} onClick={onUploadClick}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v5h14v-5" /></svg>
+          {isUploading ? "Загружаем CSV…" : "Обновить себестоимость"}
+        </button>
       </section>
 
-      {notice && <div className={`data-notice ${dataMode}`} role="status"><span>{dataMode === "live" ? "✓" : "i"}</span><p>{notice}</p></div>}
-
-      <section className="overview-grid">
-        <article className="pulse-card">
-          <div className="pulse-topline"><span>Чистая маржинальная прибыль</span><span className="live-pill"><i /> {dataMode === "live" ? "LIVE" : "DEMO"}</span></div>
-          <strong>{formatCurrency(totalMargin)}</strong>
-          <div className="delta"><b>↗ 12,8%</b><span>к прошлой неделе</span></div>
-          <div className="chart" aria-label="График роста маржинальной прибыли">
-            <div className="chart-glow" />
-            {chartValues.map((value, index) => <i key={index} style={{ height: `${value}%` }} />)}
-            <span className="chart-marker"><b>{formatCurrency(totalMargin)}</b><i /></span>
-          </div>
-          <div className="chart-axis"><span>15 июл</span><span>17 июл</span><span>19 июл</span><span>Сегодня</span></div>
-        </article>
-
-        <div className="metric-stack">
-          <article className="premium-metric">
-            <div className="metric-heading"><span className="metric-icon revenue">↗</span><small>Выручка</small><b>+8,4%</b></div>
-            <strong>{formatCurrency(totalRevenue)}</strong>
-            <p>за последние 7 дней</p>
-            <div className="micro-bars">{[45, 58, 52, 70, 62, 76, 89].map((value) => <i key={value} style={{ height: `${value}%` }} />)}</div>
-          </article>
-          <article className="premium-metric">
-            <div className="metric-heading"><span className="metric-icon margin">%</span><small>Средняя маржа</small><b>+3,4 п.п.</b></div>
-            <strong>{averageMargin.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%</strong>
-            <p>цель на период: 32%</p>
-            <div className="progress"><i style={{ width: `${Math.min(100, averageMargin / 32 * 100)}%` }} /><span /></div>
-          </article>
+      {notice && (
+        <div className={`data-notice ${dataMode}`} role={dataMode === "error" ? "alert" : "status"}>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" /><path d="M10 6.5v4.5m0 3h.01" /></svg>
+          <p>{notice}</p>
         </div>
+      )}
 
-        <article className="risk-card" id="alerts">
-          <div className="risk-orbit"><span>{alertRows.length}</span><i /><i /></div>
-          <p>SKU требуют внимания</p>
-          <small>Маржа ниже порога {threshold}%</small>
-          <div className="risk-list">
-            {alertRows.slice(0, 2).map((row) => <div key={row.sku}><span>{row.sku}</span><b>{row.percent}%</b></div>)}
+      <section className="summary" aria-label="Сводка по марже">
+        <article className="summary-cell">
+          <div className="metric-label"><span>Предварительный результат</span><span>УЧТЁННЫЕ SKU</span></div>
+          <strong className="metric-value">{formatCurrency(metrics.totalMargin)}</strong>
+          <p className="metric-note">Выручка минус комиссии и известная себестоимость</p>
+          <div className="composition" aria-label="Состав выручки">
+            <span style={{ width: `${percent(metrics.totalCost, metrics.totalRevenue)}%` }} />
+            <span style={{ width: `${percent(metrics.totalFees, metrics.totalRevenue)}%` }} />
+            <span style={{ width: `${percent(metrics.totalMargin, metrics.totalRevenue)}%` }} />
           </div>
-          <button onClick={onToggleAlerts}>{onlyAlerts ? "Показать весь портфель" : "Разобрать риски"}<span>→</span></button>
+          <div className="composition-legend">
+            <span>Себест. {formatPercent(percent(metrics.totalCost, metrics.totalRevenue))}%</span>
+            <span>Комиссии {formatPercent(percent(metrics.totalFees, metrics.totalRevenue))}%</span>
+            <span>Результат {formatPercent(percent(metrics.totalMargin, metrics.totalRevenue))}%</span>
+          </div>
         </article>
+        <article className="summary-cell">
+          <div className="metric-label"><span>Взвешенная маржа</span><span>ПО {metrics.completeCount} SKU</span></div>
+          <strong className="metric-value">{formatPercent(metrics.weightedMarginPercent)}%</strong>
+          <p className="metric-note">Порог риска: <strong>{threshold}%</strong></p>
+        </article>
+        <article className="summary-cell">
+          <div className="metric-label"><span>Ниже порога</span><span>ТРЕБУЕТ ДЕЙСТВИЯ</span></div>
+          <strong className="metric-value risk-value">{alertRows.length} SKU</strong>
+          <p className="metric-note">
+            {riskShare}% рассчитанных SKU
+            {metrics.incompleteCount > 0 ? ` · без себестоимости: ${metrics.incompleteCount}` : ""}
+          </p>
+        </article>
+      </section>
+
+      <section className="section" id="risks">
+        <div className="section-head">
+          <div><h2>Приоритет на сегодня</h2><p>Позиции отсортированы по отклонению от установленного порога.</p></div>
+          <button className="text-action" type="button" onClick={onShowAlerts}>Показать в таблице</button>
+        </div>
+        <div className="priority">
+          <div className="priority-main">
+            {sortedAlerts.length ? sortedAlerts.slice(0, 3).map((row, index) => (
+              <button className="priority-row" type="button" key={row.sku} onClick={() => onSelectRow(row)}>
+                <span className="product">
+                  <span className="product-index">{String(index + 1).padStart(2, "0")}</span>
+                  <span><b>{row.product}</b><span>{row.sku}</span></span>
+                </span>
+                <span><small className="cell-label">Маржа</small><b className="cell-value risk-percent">{formatPercent(row.percent ?? 0)}%</b></span>
+                <span><small className="cell-label">Результат</small><b className="cell-value">{formatCurrency(row.margin ?? 0)}</b></span>
+                <span><small className="cell-label">До порога</small><b className="cell-value">{formatPercent(threshold - (row.percent ?? 0))} п.п.</b></span>
+              </button>
+            )) : (
+              <div className="priority-empty"><span className="product-index safe">✓</span><div><b>Все позиции выше порога</b><span>Текущая выборка</span></div></div>
+            )}
+          </div>
+          <aside className={`priority-aside ${primaryRisk ? "" : "safe"}`}>
+            <span className="mono">{primaryRisk ? `−${formatPercent(threshold - (primaryRisk.percent ?? 0))} п.п. до порога` : "Рисков не обнаружено"}</span>
+            <div>
+              <h3>{primaryRisk ? `Проверьте «${primaryRisk.product}»` : "Маржа в безопасной зоне"}</h3>
+              <p>{primaryRisk ? "Пересчитайте цену с учётом фактических удержаний и себестоимости." : "Продолжайте следить за изменением комиссий и себестоимости."}</p>
+            </div>
+            <button className="outline-button" type="button" disabled={!primaryRisk} onClick={() => primaryRisk && onSelectRow(primaryRisk)}>Разобрать экономику</button>
+          </aside>
+        </div>
       </section>
     </>
   );

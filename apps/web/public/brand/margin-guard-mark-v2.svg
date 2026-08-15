@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-labelledby="title desc">
+  <title id="title">Знак Margin Guard</title>
+  <desc id="desc">Буква M, разделённая защищённым маржинальным зазором</desc>
+  <defs><path id="m" d="M4 66V6h16l16 18L52 6h16v60H52V31L36 49 20 31v35H4Z"/><clipPath id="top"><rect width="72" height="31"/></clipPath><clipPath id="bottom"><rect y="43" width="72" height="29"/></clipPath></defs>
+  <use href="#m" fill="#1d252a" clip-path="url(#top)"/><use href="#m" fill="#1d252a" clip-path="url(#bottom)"/><rect x="22" y="33" width="28" height="8" rx="1" fill="#16a56f"/>
+</svg>

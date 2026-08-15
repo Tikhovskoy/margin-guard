@@ -1,13 +1,13 @@
-export type MarginStatus = "healthy" | "attention" | "critical";
+export type MarginStatus = "healthy" | "attention" | "critical" | "incomplete";
 
 export type MarginRow = {
   sku: string;
   product: string;
   revenue: number;
   fees: number;
-  cost: number;
-  margin: number;
-  percent: number;
+  cost: number | null;
+  margin: number | null;
+  percent: number | null;
   status: MarginStatus;
 };
 
@@ -15,9 +15,10 @@ export type MarginPreviewItem = {
   sku: string;
   revenue: string;
   marketplace_fees: string;
-  cost_price: string;
-  margin: string;
-  margin_percent: string;
+  cost_price: string | null;
+  margin: string | null;
+  margin_percent: string | null;
+  calculation_status: "complete" | "missing_cost";
 };
 
 export const productNames: Record<string, string> = {
@@ -43,7 +44,18 @@ export const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-export function getMarginStatus(percent: number): MarginStatus {
+export type PortfolioMetrics = {
+  completeCount: number;
+  incompleteCount: number;
+  totalRevenue: number;
+  totalFees: number;
+  totalCost: number;
+  totalMargin: number;
+  weightedMarginPercent: number;
+};
+
+export function getMarginStatus(percent: number | null): MarginStatus {
+  if (percent === null) return "incomplete";
   if (percent < 20) return "critical";
   if (percent < 25) return "attention";
   return "healthy";
@@ -51,16 +63,36 @@ export function getMarginStatus(percent: number): MarginStatus {
 
 export function mapMarginPreviewItems(items: MarginPreviewItem[]): MarginRow[] {
   return items.map((item) => {
-    const percent = Number(item.margin_percent);
+    const percent = item.margin_percent === null ? null : Number(item.margin_percent);
     return {
       sku: item.sku,
       product: productNames[item.sku] ?? `Товар ${item.sku}`,
       revenue: Number(item.revenue),
       fees: Number(item.marketplace_fees),
-      cost: Number(item.cost_price),
-      margin: Number(item.margin),
+      cost: item.cost_price === null ? null : Number(item.cost_price),
+      margin: item.margin === null ? null : Number(item.margin),
       percent,
       status: getMarginStatus(percent),
     };
   });
+}
+
+export function calculatePortfolioMetrics(rows: MarginRow[]): PortfolioMetrics {
+  const completeRows = rows.filter(
+    (row) => row.cost !== null && row.margin !== null && row.percent !== null,
+  );
+  const totalRevenue = completeRows.reduce((total, row) => total + row.revenue, 0);
+  const totalFees = completeRows.reduce((total, row) => total + row.fees, 0);
+  const totalCost = completeRows.reduce((total, row) => total + (row.cost ?? 0), 0);
+  const totalMargin = completeRows.reduce((total, row) => total + (row.margin ?? 0), 0);
+
+  return {
+    completeCount: completeRows.length,
+    incompleteCount: rows.length - completeRows.length,
+    totalRevenue,
+    totalFees,
+    totalCost,
+    totalMargin,
+    weightedMarginPercent: totalRevenue > 0 ? totalMargin / totalRevenue * 100 : 0,
+  };
 }

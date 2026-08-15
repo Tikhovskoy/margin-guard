@@ -10,10 +10,17 @@ def sum_fees(fees: tuple[FeeLine, ...]) -> Decimal:
     return sum((f.amount for f in fees), Decimal("0"))
 
 
-def calculate_sku_margin(operation: SkuOperation, cost_price: Decimal) -> SkuMargin:
-    """Чистая маржа: выручка − удержания площадки − себестоимость."""
+def calculate_sku_margin(
+    operation: SkuOperation,
+    cost_price: Decimal | None,
+) -> SkuMargin:
+    """Рассчитать маржу или вернуть неполный результат без себестоимости."""
     marketplace_fees = sum_fees(operation.fees)
-    margin = operation.revenue - marketplace_fees - cost_price
+    margin = (
+        operation.revenue - marketplace_fees - cost_price
+        if cost_price is not None
+        else None
+    )
     return SkuMargin(
         sku=operation.sku,
         revenue=operation.revenue,

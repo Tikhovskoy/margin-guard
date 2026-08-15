@@ -1,54 +1,157 @@
-import { formatCurrency, type MarginRow } from "../lib/margin-data";
+"use client";
+
+import { useMemo, useState } from "react";
+import { formatCurrency, type MarginRow, type MarginStatus } from "../lib/margin-data";
+
+type SortKey = "revenue" | "fees" | "cost" | "margin" | "percent";
+type SortDirection = "asc" | "desc";
 
 type ProductTableProps = {
   onlyAlerts: boolean;
   query: string;
   rows: MarginRow[];
   threshold: number;
+  onOnlyAlertsChange: (value: boolean) => void;
   onQueryChange: (value: string) => void;
+  onSelectRow: (row: MarginRow) => void;
   onThresholdChange: (value: number) => void;
 };
 
-const statusLabel = {
+const statusLabel: Record<MarginStatus, string> = {
   healthy: "Стабильно",
   attention: "Наблюдать",
-  critical: "Низкая маржа",
+  critical: "Ниже порога",
+  incomplete: "Нет себестоимости",
 };
 
-export function ProductTable({ onlyAlerts, query, rows, threshold, onQueryChange, onThresholdChange }: ProductTableProps) {
+const columns: Array<{ key: SortKey; label: string }> = [
+  { key: "revenue", label: "Выручка" },
+  { key: "fees", label: "Комиссии" },
+  { key: "cost", label: "Себестоимость" },
+  { key: "margin", label: "Маржа" },
+  { key: "percent", label: "Маржа, %" },
+];
+
+const formatPercent = (value: number) => value.toLocaleString("ru-RU", { maximumFractionDigits: 1 });
+const formatNullableCurrency = (value: number | null) => value === null ? "—" : formatCurrency(value);
+
+function getStatus(percent: number | null, threshold: number): MarginStatus {
+  if (percent === null) return "incomplete";
+  if (percent < threshold) return "critical";
+  if (percent < threshold + 5) return "attention";
+  return "healthy";
+}
+
+export function ProductTable({
+  onlyAlerts,
+  query,
+  rows,
+  threshold,
+  onOnlyAlertsChange,
+  onQueryChange,
+  onSelectRow,
+  onThresholdChange,
+}: ProductTableProps) {
+  const [sortKey, setSortKey] = useState<SortKey>("percent");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  const sortedRows = useMemo(() => [...rows].sort((a, b) => {
+    const aValue = a[sortKey] ?? Number.POSITIVE_INFINITY;
+    const bValue = b[sortKey] ?? Number.POSITIVE_INFINITY;
+    const result = aValue - bValue;
+    return sortDirection === "asc" ? result : -result;
+  }), [rows, sortDirection, sortKey]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDirection((current) => current === "asc" ? "desc" : "asc");
+      return;
+    }
+    setSortKey(key);
+    setSortDirection("asc");
+  };
+
+  const sortLabel = (key: SortKey, label: string) => {
+    if (key !== sortKey) return `${label}: сортировать по возрастанию`;
+    return `${label}: сортировать по ${sortDirection === "asc" ? "убыванию" : "возрастанию"}`;
+  };
+
   return (
-    <section className="products-panel" id="margins">
-      <div className="panel-heading">
-        <div><p className="section-kicker">ПОРТФЕЛЬ</p><h2>{onlyAlerts ? "Товары в зоне риска" : "Юнит-экономика по SKU"}</h2></div>
-        <div className="panel-summary"><span><i className="healthy-dot" />{rows.length} позиций</span><button aria-label="Дополнительные действия">•••</button></div>
-      </div>
+    <section className="section" id="products">
+      <div className="section-head"><div><h2>Экономика по SKU</h2><p>Предварительный результат: выручка − комиссии − известная себестоимость.</p></div></div>
+      <div className="panel">
+        <div className="toolbar">
+          <label className="search">
+            <span className="visually-hidden">Найти товар или SKU</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4 4" /></svg>
+            <input type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Найти товар или SKU" />
+          </label>
+          <label className="threshold">Порог ниже
+            <input
+              type="number"
+              min="1"
+              max="99"
+              value={threshold}
+              aria-label="Порог маржи"
+              onChange={(event) => {
+                const value = Number(event.target.value);
+                if (Number.isFinite(value)) onThresholdChange(Math.max(1, Math.min(99, value)));
+              }}
+            />
+            <span>%</span>
+          </label>
+          <label className="check"><input type="checkbox" checked={onlyAlerts} onChange={(event) => onOnlyAlertsChange(event.target.checked)} />Только риски</label>
+        </div>
 
-      <div className="toolbar">
-        <label className="search-field"><span>⌕</span><input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Найти товар или SKU" /></label>
-        <label className="threshold-field">Alert ниже<input type="number" min="1" max="99" value={threshold} onChange={(event) => onThresholdChange(Number(event.target.value))} /><span>%</span></label>
-        <button className="filter-button">Фильтры <span>＋</span></button>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Товар</th>
+                {columns.map((column) => (
+                  <th key={column.key} aria-sort={sortKey === column.key ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}>
+                    <button type="button" aria-label={sortLabel(column.key, column.label)} onClick={() => handleSort(column.key)}>
+                      {column.label}<span aria-hidden="true">{sortKey === column.key ? (sortDirection === "asc" ? " ↑" : " ↓") : " ↕"}</span>
+                    </button>
+                  </th>
+                ))}
+                <th>Состояние</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedRows.map((row) => {
+                const status = getStatus(row.percent, threshold);
+                return (
+                  <tr
+                    key={row.sku}
+                    tabIndex={0}
+                    onClick={() => onSelectRow(row)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onSelectRow(row);
+                      }
+                    }}
+                  >
+                    <td><div className="table-product"><b>{row.product}</b><span>{row.sku}</span></div></td>
+                    <td className="number" data-label="Выручка">{formatCurrency(row.revenue)}</td>
+                    <td className="number" data-label="Комиссии">{formatCurrency(row.fees)}</td>
+                    <td className="number" data-label="Себестоимость">{formatNullableCurrency(row.cost)}</td>
+                    <td className="number" data-label="Результат">{formatNullableCurrency(row.margin)}</td>
+                    <td className="number" data-label="Маржа, %">{row.percent === null ? "—" : `${formatPercent(row.percent)}%`}</td>
+                    <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {!sortedRows.length && <div className="empty"><b>Совпадений нет</b><br />Измените запрос или порог маржи.</div>}
+        </div>
+        <footer className="panel-footer">
+          <span>{sortedRows.length} {sortedRows.length === 1 ? "позиция" : sortedRows.length > 1 && sortedRows.length < 5 ? "позиции" : "позиций"}</span>
+          <span>Источник: {onlyAlerts ? "SKU ниже заданного порога" : "текущий preview"}</span>
+        </footer>
       </div>
-
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Товар</th><th>Выручка</th><th>Комиссии</th><th>Себестоимость</th><th>Маржа</th><th>Состояние</th></tr></thead>
-          <tbody>
-            {rows.map((row, index) => {
-              const status = row.percent < threshold ? "critical" : row.status;
-              return <tr key={row.sku} style={{ animationDelay: `${index * 55}ms` }}>
-                <td><div className={`product-thumb tone-${(index % 4) + 1}`}><span>{row.product.slice(0, 1)}</span></div><div className="product-name"><b>{row.product}</b><span>{row.sku}</span></div></td>
-                <td><b>{formatCurrency(row.revenue)}</b></td>
-                <td>{formatCurrency(row.fees)}</td>
-                <td>{formatCurrency(row.cost)}</td>
-                <td><b>{formatCurrency(row.margin)}</b><span className="margin-percent">{row.percent}%</span></td>
-                <td><em className={`status ${status}`}><i />{statusLabel[status]}</em></td>
-              </tr>;
-            })}
-          </tbody>
-        </table>
-        {!rows.length && <div className="empty-state"><span>⌕</span><b>Ничего не найдено</b><p>Измените запрос или значение порога</p></div>}
-      </div>
-      <footer className="table-footer"><span>Обновлено несколько секунд назад</span><button>Смотреть полный отчёт <i>→</i></button></footer>
     </section>
   );
 }

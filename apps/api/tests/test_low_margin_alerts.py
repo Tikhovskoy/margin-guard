@@ -46,3 +46,26 @@ async def test_sends_alert_only_for_margin_below_threshold() -> None:
     assert alerts[0].message == (
         "⚠️ Низкая маржа: wildberries / WB-001 — 20.00% при пороге 25%"
     )
+
+
+@pytest.mark.asyncio
+async def test_does_not_alert_when_cost_is_missing() -> None:
+    """Неполный расчёт не создаёт ложное предупреждение о марже."""
+    operation = SkuOperation(
+        marketplace=Marketplace.WILDBERRIES,
+        sku="WB-NO-COST",
+        operation_date=date(2026, 7, 20),
+        revenue=Decimal("1000"),
+        fees=(FeeLine("commission", Decimal("300")),),
+    )
+    margins = CalculateMarginsUseCase().execute([operation], {})
+    notifier = FakeNotifier()
+
+    alerts = await SendLowMarginAlerts(notifier).execute(
+        Marketplace.WILDBERRIES,
+        margins,
+        Decimal("25"),
+    )
+
+    assert alerts == []
+    assert notifier.sent == []

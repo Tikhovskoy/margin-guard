@@ -51,12 +51,17 @@ def test_preview_uses_cost_prices_from_repository(
     )
 
     assert response.status_code == 200
+    assert response.json()["data_mode"] == "mock"
     items = response.json()["items"]
     assert items[0]["sku"] == "WB-001"
     assert items[0]["cost_price"] == "600.00"
     assert items[0]["margin"] == "555.00"
+    assert items[0]["calculation_status"] == "complete"
     assert items[1]["sku"] == "WB-002"
-    assert items[1]["cost_price"] == "0"
+    assert items[1]["cost_price"] is None
+    assert items[1]["margin"] is None
+    assert items[1]["margin_percent"] is None
+    assert items[1]["calculation_status"] == "missing_cost"
     alerts = response.json()["alerts"]
     assert alerts == [
         {

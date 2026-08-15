@@ -2,7 +2,7 @@
 
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -31,9 +31,10 @@ class MarginItemResponse(BaseModel):
     sku: str
     revenue: str
     marketplace_fees: str
-    cost_price: str
-    margin: str
-    margin_percent: str
+    cost_price: str | None
+    margin: str | None
+    margin_percent: str | None
+    calculation_status: Literal["complete", "missing_cost"]
 
 
 class MarginAlertResponse(BaseModel):
@@ -49,6 +50,7 @@ class MarginsPreviewResponse(BaseModel):
     """Список марж по площадке."""
 
     marketplace: str
+    data_mode: Literal["mock", "live"]
     items: list[MarginItemResponse]
     alerts: list[MarginAlertResponse]
 
@@ -89,14 +91,20 @@ async def preview_margins(
 
     return MarginsPreviewResponse(
         marketplace=marketplace.value,
+        data_mode=settings.wb_mode
+        if marketplace is Marketplace.WILDBERRIES
+        else settings.ozon_mode,
         items=[
             MarginItemResponse(
                 sku=m.sku,
                 revenue=str(m.revenue),
                 marketplace_fees=str(m.marketplace_fees),
-                cost_price=str(m.cost_price),
-                margin=str(m.margin),
-                margin_percent=str(m.margin_percent),
+                cost_price=str(m.cost_price) if m.cost_price is not None else None,
+                margin=str(m.margin) if m.margin is not None else None,
+                margin_percent=(
+                    str(m.margin_percent) if m.margin_percent is not None else None
+                ),
+                calculation_status="complete" if m.is_complete else "missing_cost",
             )
             for m in margins
         ],
