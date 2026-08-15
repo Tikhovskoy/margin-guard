@@ -29,11 +29,17 @@ class MarginItemResponse(BaseModel):
     """Маржа по SKU в ответе API."""
 
     sku: str
+    source_operation_id: str
+    quantity: int
     revenue: str
     marketplace_fees: str
     cost_price: str | None
+    cost_amount: str | None
     margin: str | None
     margin_percent: str | None
+    rrd_id: str | None
+    srid: str | None
+    report_id: str | None
     calculation_status: Literal["complete", "missing_cost"]
 
 
@@ -97,13 +103,19 @@ async def preview_margins(
         items=[
             MarginItemResponse(
                 sku=m.sku,
+                source_operation_id=m.source_operation_id,
+                quantity=m.quantity,
                 revenue=str(m.revenue),
                 marketplace_fees=str(m.marketplace_fees),
                 cost_price=str(m.cost_price) if m.cost_price is not None else None,
+                cost_amount=str(m.cost_amount) if m.cost_amount is not None else None,
                 margin=str(m.margin) if m.margin is not None else None,
                 margin_percent=(
                     str(m.margin_percent) if m.margin_percent is not None else None
                 ),
+                rrd_id=str(m.rrd_id) if m.rrd_id is not None else None,
+                srid=m.srid,
+                report_id=str(m.report_id) if m.report_id is not None else None,
                 calculation_status="complete" if m.is_complete else "missing_cost",
             )
             for m in margins

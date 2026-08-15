@@ -26,10 +26,22 @@ class SkuOperation:
     """Операция по SKU из отчёта маркетплейса."""
 
     marketplace: Marketplace
+    source_operation_id: str
     sku: str
     operation_date: date
+    quantity: int
     revenue: Decimal
     fees: tuple[FeeLine, ...]
+    rrd_id: int | None = None
+    srid: str | None = None
+    report_id: int | None = None
+
+    def __post_init__(self) -> None:
+        """Проверить обязательную идентичность и количество операции."""
+        if not self.source_operation_id.strip():
+            raise ValueError("source_operation_id must not be empty")
+        if self.quantity <= 0:
+            raise ValueError("quantity must be greater than zero")
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,10 +58,16 @@ class SkuMargin:
     """Рассчитанная маржа по SKU."""
 
     sku: str
+    source_operation_id: str
+    quantity: int
     revenue: Decimal
     marketplace_fees: Decimal
     cost_price: Decimal | None
+    cost_amount: Decimal | None
     margin: Decimal | None
+    rrd_id: int | None = None
+    srid: str | None = None
+    report_id: int | None = None
 
     @property
     def margin_percent(self) -> Decimal | None:
@@ -63,7 +81,7 @@ class SkuMargin:
     @property
     def is_complete(self) -> bool:
         """Достаточно ли данных для расчёта маржи."""
-        return self.cost_price is not None and self.margin is not None
+        return self.cost_amount is not None and self.margin is not None
 
 
 @dataclass(frozen=True, slots=True)

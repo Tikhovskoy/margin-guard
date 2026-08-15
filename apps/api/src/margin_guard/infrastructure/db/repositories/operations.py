@@ -28,7 +28,13 @@ class SqlAlchemyOperationRepository(OperationRepository):
                 self._session.add(row)
                 affected += 1
                 continue
+            existing.sku = operation.sku
+            existing.operation_date = operation.operation_date
+            existing.quantity = operation.quantity
             existing.revenue = operation.revenue
+            existing.rrd_id = operation.rrd_id
+            existing.srid = operation.srid
+            existing.report_id = operation.report_id
             existing.fees.clear()
             for fee in operation.fees:
                 existing.fees.append(
@@ -47,8 +53,7 @@ class SqlAlchemyOperationRepository(OperationRepository):
             .options(selectinload(SkuOperationRow.fees))
             .where(
                 SkuOperationRow.marketplace == operation.marketplace.value,
-                SkuOperationRow.sku == operation.sku,
-                SkuOperationRow.operation_date == operation.operation_date,
+                SkuOperationRow.source_operation_id == operation.source_operation_id,
             )
         )
         result = await self._session.execute(stmt)

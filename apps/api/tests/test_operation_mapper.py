@@ -10,10 +10,13 @@ from margin_guard.infrastructure.db.mappers import operation_to_row, row_to_oper
 def test_operation_mapper_roundtrip() -> None:
     operation = SkuOperation(
         marketplace=Marketplace.OZON,
+        source_operation_id="ozon-operation-100",
         sku="OZ-100",
         operation_date=date(2026, 5, 1),
+        quantity=3,
         revenue=Decimal("500.00"),
         fees=(FeeLine("commission", Decimal("50.00")),),
+        report_id=500,
     )
     restored = row_to_operation(operation_to_row(operation))
     assert restored == operation

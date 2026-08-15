@@ -5,7 +5,16 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, DateTime, ForeignKey, Numeric, String, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from margin_guard.infrastructure.db.base import Base
@@ -18,17 +27,21 @@ class SkuOperationRow(Base):
     __table_args__ = (
         UniqueConstraint(
             "marketplace",
-            "sku",
-            "operation_date",
-            name="uq_sku_operations_marketplace_sku_date",
+            "source_operation_id",
+            name="uq_sku_operations_marketplace_source_operation_id",
         ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     marketplace: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_operation_id: Mapped[str] = mapped_column(String(160), nullable=False)
     sku: Mapped[str] = mapped_column(String(128), nullable=False)
     operation_date: Mapped[date] = mapped_column(Date, nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     revenue: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
+    rrd_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    srid: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    report_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     fees: Mapped[list[SkuOperationFeeRow]] = relationship(
         back_populates="operation",
         cascade="all, delete-orphan",

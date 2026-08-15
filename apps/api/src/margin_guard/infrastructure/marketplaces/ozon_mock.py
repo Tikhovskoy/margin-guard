@@ -23,12 +23,14 @@ class OzonMockAdapter(MarketplaceAdapter):
         return [
             SkuOperation(
                 marketplace=Marketplace.OZON,
+                source_operation_id=f"mock-ozon-{date_to.isoformat()}-101",
                 sku="OZ-101",
                 operation_date=date_to,
-                revenue=Decimal("2200.00"),
+                quantity=2,
+                revenue=Decimal("4400.00"),
                 fees=(
-                    FeeLine("commission", Decimal("880.00")),
-                    FeeLine("logistics", Decimal("200.00")),
+                    FeeLine("commission", Decimal("1760.00")),
+                    FeeLine("logistics", Decimal("400.00")),
                 ),
             ),
         ]
