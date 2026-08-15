@@ -24,8 +24,10 @@ class FakeNotifier:
 async def test_sends_alert_only_for_margin_below_threshold() -> None:
     operation = SkuOperation(
         marketplace=Marketplace.WILDBERRIES,
+        source_operation_id="wb-operation-001",
         sku="WB-001",
         operation_date=date(2026, 7, 20),
+        quantity=1,
         revenue=Decimal("1000"),
         fees=(FeeLine("commission", Decimal("300")),),
     )
@@ -53,8 +55,10 @@ async def test_does_not_alert_when_cost_is_missing() -> None:
     """Неполный расчёт не создаёт ложное предупреждение о марже."""
     operation = SkuOperation(
         marketplace=Marketplace.WILDBERRIES,
+        source_operation_id="wb-operation-no-cost",
         sku="WB-NO-COST",
         operation_date=date(2026, 7, 20),
+        quantity=1,
         revenue=Decimal("1000"),
         fees=(FeeLine("commission", Decimal("300")),),
     )

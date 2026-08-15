@@ -54,8 +54,14 @@ def test_preview_uses_cost_prices_from_repository(
     assert response.json()["data_mode"] == "mock"
     items = response.json()["items"]
     assert items[0]["sku"] == "WB-001"
+    assert items[0]["quantity"] == 2
+    assert items[0]["source_operation_id"].startswith("mock-wb-")
     assert items[0]["cost_price"] == "600.00"
-    assert items[0]["margin"] == "555.00"
+    assert items[0]["cost_amount"] == "1200.00"
+    assert items[0]["margin"] == "1110.00"
+    assert items[0]["rrd_id"] == "100001"
+    assert items[0]["srid"] == "mock-wb-srid-001"
+    assert items[0]["report_id"] == "20260815"
     assert items[0]["calculation_status"] == "complete"
     assert items[1]["sku"] == "WB-002"
     assert items[1]["cost_price"] is None

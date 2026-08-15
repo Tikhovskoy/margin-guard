@@ -23,23 +23,33 @@ class WildberriesMockAdapter(MarketplaceAdapter):
         return [
             SkuOperation(
                 marketplace=Marketplace.WILDBERRIES,
+                source_operation_id=f"mock-wb-{date_to.isoformat()}-001",
                 sku="WB-001",
                 operation_date=date_to,
-                revenue=Decimal("1500.00"),
+                quantity=2,
+                revenue=Decimal("3000.00"),
                 fees=(
-                    FeeLine("commission", Decimal("225.00")),
-                    FeeLine("logistics", Decimal("120.00")),
+                    FeeLine("commission", Decimal("450.00")),
+                    FeeLine("logistics", Decimal("240.00")),
                 ),
+                rrd_id=100001,
+                srid="mock-wb-srid-001",
+                report_id=int(date_to.strftime("%Y%m%d")),
             ),
             SkuOperation(
                 marketplace=Marketplace.WILDBERRIES,
+                source_operation_id=f"mock-wb-{date_to.isoformat()}-002",
                 sku="WB-002",
                 operation_date=date_to,
+                quantity=1,
                 revenue=Decimal("800.00"),
                 fees=(
                     FeeLine("commission", Decimal("200.00")),
                     FeeLine("logistics", Decimal("90.00")),
                     FeeLine("ads", Decimal("150.00")),
                 ),
+                rrd_id=100002,
+                srid="mock-wb-srid-002",
+                report_id=int(date_to.strftime("%Y%m%d")),
             ),
         ]
