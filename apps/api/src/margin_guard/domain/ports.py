@@ -7,6 +7,8 @@ from margin_guard.domain.entities import (
     CostPriceEntry,
     MarginAlert,
     Marketplace,
+    RawSource,
+    RawSourceType,
     SkuOperation,
 )
 
@@ -54,3 +56,32 @@ class AlertNotifier(ABC):
     @abstractmethod
     async def send(self, alerts: list[MarginAlert]) -> None:
         """Отправить список предупреждений."""
+
+
+class RawSourceRepository(ABC):
+    """Метаданные неизменяемых первичных источников."""
+
+    @abstractmethod
+    async def get_by_checksum(
+        self,
+        marketplace: Marketplace,
+        source_type: RawSourceType,
+        checksum_sha256: str,
+    ) -> RawSource | None:
+        """Найти ранее загруженный источник по содержимому."""
+
+    @abstractmethod
+    async def add(self, source: RawSource) -> RawSource:
+        """Сохранить метаданные нового источника."""
+
+
+class RawSourceStorage(ABC):
+    """Хранилище неизменяемых байтов первичного источника."""
+
+    @abstractmethod
+    async def store(self, storage_key: str, content: bytes) -> None:
+        """Сохранить байты без возможности перезаписи."""
+
+    @abstractmethod
+    async def read(self, storage_key: str) -> bytes:
+        """Прочитать исходные байты."""

@@ -1,7 +1,7 @@
 """Доменные сущности."""
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 
@@ -11,6 +11,23 @@ class Marketplace(StrEnum):
 
     WILDBERRIES = "wildberries"
     OZON = "ozon"
+
+
+class RawSourceType(StrEnum):
+    """Тип первичного финансового источника."""
+
+    REALIZATION_REPORT = "realization_report"
+    MARKETPLACE_API = "marketplace_api"
+    BANK_STATEMENT = "bank_statement"
+
+
+class RawSourceStatus(StrEnum):
+    """Состояние обработки первичного источника."""
+
+    UPLOADED = "uploaded"
+    PROCESSING = "processing"
+    PARSED = "parsed"
+    FAILED = "failed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,6 +68,22 @@ class CostPriceEntry:
     marketplace: Marketplace
     sku: str
     cost_price: Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class RawSource:
+    """Метаданные неизменяемого первичного файла."""
+
+    id: str
+    marketplace: Marketplace
+    source_type: RawSourceType
+    original_filename: str
+    content_type: str
+    size_bytes: int
+    checksum_sha256: str
+    storage_key: str
+    status: RawSourceStatus
+    created_at: datetime
 
 
 @dataclass(frozen=True, slots=True)
