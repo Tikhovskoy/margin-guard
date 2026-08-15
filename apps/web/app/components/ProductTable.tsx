@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { formatCurrency, type MarginRow, type MarginStatus } from "../lib/margin-data";
 
-type SortKey = "revenue" | "fees" | "cost" | "margin" | "percent";
+type SortKey = "quantity" | "revenue" | "fees" | "cost" | "margin" | "percent";
 type SortDirection = "asc" | "desc";
 
 type ProductTableProps = {
@@ -25,6 +25,7 @@ const statusLabel: Record<MarginStatus, string> = {
 };
 
 const columns: Array<{ key: SortKey; label: string }> = [
+  { key: "quantity", label: "Количество" },
   { key: "revenue", label: "Выручка" },
   { key: "fees", label: "Комиссии" },
   { key: "cost", label: "Себестоимость" },
@@ -123,7 +124,7 @@ export function ProductTable({
                 const status = getStatus(row.percent, threshold);
                 return (
                   <tr
-                    key={row.sku}
+                    key={row.sourceOperationId}
                     tabIndex={0}
                     onClick={() => onSelectRow(row)}
                     onKeyDown={(event) => {
@@ -134,6 +135,7 @@ export function ProductTable({
                     }}
                   >
                     <td><div className="table-product"><b>{row.product}</b><span>{row.sku}</span></div></td>
+                    <td className="number" data-label="Количество">{row.quantity}</td>
                     <td className="number" data-label="Выручка">{formatCurrency(row.revenue)}</td>
                     <td className="number" data-label="Комиссии">{formatCurrency(row.fees)}</td>
                     <td className="number" data-label="Себестоимость">{formatNullableCurrency(row.cost)}</td>

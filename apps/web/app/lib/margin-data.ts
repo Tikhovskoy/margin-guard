@@ -2,22 +2,34 @@ export type MarginStatus = "healthy" | "attention" | "critical" | "incomplete";
 
 export type MarginRow = {
   sku: string;
+  sourceOperationId: string;
+  quantity: number;
   product: string;
   revenue: number;
   fees: number;
+  unitCost: number | null;
   cost: number | null;
   margin: number | null;
   percent: number | null;
   status: MarginStatus;
+  rrdId: string | null;
+  srid: string | null;
+  reportId: string | null;
 };
 
 export type MarginPreviewItem = {
   sku: string;
+  source_operation_id: string;
+  quantity: number;
   revenue: string;
   marketplace_fees: string;
   cost_price: string | null;
+  cost_amount: string | null;
   margin: string | null;
   margin_percent: string | null;
+  rrd_id: string | null;
+  srid: string | null;
+  report_id: string | null;
   calculation_status: "complete" | "missing_cost";
 };
 
@@ -30,11 +42,11 @@ export const productNames: Record<string, string> = {
 };
 
 export const demoMarginRows: MarginRow[] = [
-  { sku: "WB-001", product: "Термокружка 450 мл", revenue: 1500, fees: 345, cost: 600, margin: 555, percent: 37, status: "healthy" },
-  { sku: "WB-002", product: "Органайзер для кухни", revenue: 800, fees: 440, cost: 250, margin: 110, percent: 13.75, status: "critical" },
-  { sku: "WB-014", product: "Набор контейнеров", revenue: 2250, fees: 517, cost: 940, margin: 793, percent: 35.24, status: "healthy" },
-  { sku: "WB-021", product: "Бутылка спортивная", revenue: 1240, fees: 310, cost: 510, margin: 420, percent: 33.87, status: "healthy" },
-  { sku: "WB-033", product: "Щётка для одежды", revenue: 690, fees: 207, cost: 335, margin: 148, percent: 21.45, status: "attention" },
+  { sku: "WB-001", sourceOperationId: "demo-wb-001", quantity: 1, product: "Термокружка 450 мл", revenue: 1500, fees: 345, unitCost: 600, cost: 600, margin: 555, percent: 37, status: "healthy", rrdId: null, srid: null, reportId: null },
+  { sku: "WB-002", sourceOperationId: "demo-wb-002", quantity: 1, product: "Органайзер для кухни", revenue: 800, fees: 440, unitCost: 250, cost: 250, margin: 110, percent: 13.75, status: "critical", rrdId: null, srid: null, reportId: null },
+  { sku: "WB-014", sourceOperationId: "demo-wb-014", quantity: 1, product: "Набор контейнеров", revenue: 2250, fees: 517, unitCost: 940, cost: 940, margin: 793, percent: 35.24, status: "healthy", rrdId: null, srid: null, reportId: null },
+  { sku: "WB-021", sourceOperationId: "demo-wb-021", quantity: 1, product: "Бутылка спортивная", revenue: 1240, fees: 310, unitCost: 510, cost: 510, margin: 420, percent: 33.87, status: "healthy", rrdId: null, srid: null, reportId: null },
+  { sku: "WB-033", sourceOperationId: "demo-wb-033", quantity: 1, product: "Щётка для одежды", revenue: 690, fees: 207, unitCost: 335, cost: 335, margin: 148, percent: 21.45, status: "attention", rrdId: null, srid: null, reportId: null },
 ];
 
 export const formatCurrency = (value: number) =>
@@ -66,13 +78,19 @@ export function mapMarginPreviewItems(items: MarginPreviewItem[]): MarginRow[] {
     const percent = item.margin_percent === null ? null : Number(item.margin_percent);
     return {
       sku: item.sku,
+      sourceOperationId: item.source_operation_id,
+      quantity: item.quantity,
       product: productNames[item.sku] ?? `Товар ${item.sku}`,
       revenue: Number(item.revenue),
       fees: Number(item.marketplace_fees),
-      cost: item.cost_price === null ? null : Number(item.cost_price),
+      unitCost: item.cost_price === null ? null : Number(item.cost_price),
+      cost: item.cost_amount === null ? null : Number(item.cost_amount),
       margin: item.margin === null ? null : Number(item.margin),
       percent,
       status: getMarginStatus(percent),
+      rrdId: item.rrd_id,
+      srid: item.srid,
+      reportId: item.report_id,
     };
   });
 }

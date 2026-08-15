@@ -56,10 +56,16 @@ export function SkuDetailsDialog({ row, onClose }: SkuDetailsDialogProps) {
             </p>
           )}
           <div className="detail-grid">
+            <div><span>Количество</span><b>{row.quantity}</b></div>
             <div><span>Выручка</span><b>{formatCurrency(row.revenue)}</b></div>
             <div><span>Комиссии</span><b>{formatCurrency(row.fees)}</b></div>
-            <div><span>Себестоимость</span><b>{formatNullableCurrency(row.cost)}</b></div>
+            <div><span>Себестоимость единицы</span><b>{formatNullableCurrency(row.unitCost)}</b></div>
+            <div><span>Себестоимость всего</span><b>{formatNullableCurrency(row.cost)}</b></div>
             <div><span>Маржа</span><b>{row.percent === null ? "Не рассчитана" : `${row.percent.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%`}</b></div>
+            <div><span>ID операции</span><b>{row.sourceOperationId}</b></div>
+            {row.rrdId !== null && <div><span>rrd_id</span><b>{row.rrdId}</b></div>}
+            {row.srid !== null && <div><span>srid</span><b>{row.srid}</b></div>}
+            {row.reportId !== null && <div><span>ID отчёта</span><b>{row.reportId}</b></div>}
           </div>
         </>
       )}

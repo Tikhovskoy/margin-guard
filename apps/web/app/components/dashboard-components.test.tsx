@@ -7,13 +7,19 @@ import { SkuDetailsDialog } from "./SkuDetailsDialog";
 
 const incompleteRow: MarginRow = {
   sku: "WB-NO-COST",
+  sourceOperationId: "mock-wb-no-cost",
+  quantity: 2,
   product: "Товар без себестоимости",
   revenue: 1000,
   fees: 200,
+  unitCost: null,
   cost: null,
   margin: null,
   percent: null,
   status: "incomplete",
+  rrdId: null,
+  srid: null,
+  reportId: null,
 };
 
 describe("ProductTable", () => {
