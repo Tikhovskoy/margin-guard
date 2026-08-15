@@ -84,3 +84,31 @@ class SkuCostPriceRow(Base):
         DateTime(timezone=True),
         nullable=False,
     )
+
+
+class RawSourceRow(Base):
+    """Метаданные неизменяемого первичного файла."""
+
+    __tablename__ = "raw_sources"
+    __table_args__ = (
+        UniqueConstraint(
+            "marketplace",
+            "source_type",
+            "checksum_sha256",
+            name="uq_raw_sources_marketplace_type_checksum",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    marketplace: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    content_type: Mapped[str] = mapped_column(String(127), nullable=False)
+    size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    checksum_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    storage_key: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )

@@ -2,6 +2,7 @@
 
 from decimal import Decimal
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -35,6 +36,8 @@ class Settings(BaseSettings):
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000
+    raw_source_dir: Path = Path("data/raw-sources")
+    raw_source_max_upload_bytes: int = 25 * 1024 * 1024
     low_margin_threshold_percent: Decimal = Decimal("20")
 
 
